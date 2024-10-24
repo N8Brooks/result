@@ -1,17 +1,17 @@
 export type NonOptional<T> = T extends undefined ? never : T;
 
-interface Resultable<T, E> {
-  isOk(): this is Ok<T>;
-  isErr(): this is Err<E>;
-  unwrap(): T | never;
-  unwrapErr(): E | never;
-}
-
 export type InnerOk<T> = { ok: NonOptional<T>; err?: never };
 
 export type InnerErr<E> = { ok?: never; err: NonOptional<E> };
 
 export type InnerResult<T, E> = Ok<T> | Err<E>;
+
+export interface Resultable<T, E> {
+  isOk(): this is Ok<T>;
+  isErr(): this is Err<E>;
+  unwrap(): T | never;
+  unwrapErr(): E | never;
+}
 
 export type Result<T, E> = InnerResult<T, E> & Resultable<T, E>;
 
@@ -33,7 +33,7 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   }
 
   unwrapErr(): never {
-    throw new Error("unwrapErr called on an Ok value")
+    throw new Error("unwrapErr called on an Ok value");
   }
 }
 
