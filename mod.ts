@@ -11,6 +11,7 @@ export interface Resultable<T, E> {
   isErr(): this is Err<E>;
   unwrap(): T | never;
   unwrapErr(): E | never;
+  and(res: Result<T, E>): Result<T, E>;
   or(res: Result<T, E>): Result<T, E>;
 }
 
@@ -41,6 +42,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     throw new Error("unwrapErr called on an Ok value");
   }
 
+  and<E>(res: Result<T, E>): Result<T, E> {
+    return res;
+  }
+
   or<E>(_res: Result<T, E>): Ok<T> {
     return this;
   }
@@ -69,6 +74,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   unwrapErr(): E {
     return this.err;
+  }
+
+  and<T>(_res: Result<T, E>): this {
+    return this;
   }
 
   or<T>(res: Result<T, E>): Result<T, E> {

@@ -48,6 +48,21 @@ describe("unwrapErr", () => {
   });
 });
 
+describe("and", () => {
+  [
+    { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "b" },
+    { name: "ok err", a: Ok.from(1), b: Err.from("b"), key: "b" },
+    { name: "err ok", a: Err.from("a"), b: Ok.from(2), key: "a" },
+    { name: "err err", a: Err.from("a"), b: Err.from("b"), key: "a" },
+  ].forEach(({ name, a, b, key }) => {
+    it(name, () => {
+      const actual = a.and(b);
+      const expected = key === "a" ? a : b;
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("or", () => {
   [
     { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "a" },
