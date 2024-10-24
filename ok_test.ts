@@ -1,14 +1,14 @@
 import { assertStrictEquals } from "jsr:@std/assert";
 import { Ok } from "./mod.ts";
 
-Deno.test("is_ok", () => {
+Deno.test("isOk", () => {
   const result = new Ok(1);
-  assertStrictEquals(result.is_ok(), true);
+  assertStrictEquals(result.isOk(), true);
 });
 
-Deno.test("is_err", () => {
+Deno.test("isErr", () => {
   const result = new Ok(1);
-  assertStrictEquals(result.is_err(), false);
+  assertStrictEquals(result.isErr(), false);
 });
 
 Deno.test("unwrap", () => {

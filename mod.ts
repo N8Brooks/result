@@ -1,8 +1,8 @@
 export type NonOptional<T> = T extends undefined ? never : T;
 
 interface Resultable<T, E> {
-  is_ok(): this is Ok<T>;
-  is_err(): this is Err<E>;
+  isOk(): this is Ok<T>;
+  isErr(): this is Err<E>;
   unwrap(): T | never;
 }
 
@@ -19,11 +19,11 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
 
   constructor(public ok: NonOptional<T>) {}
 
-  is_ok(): this is Ok<T> {
+  isOk(): this is Ok<T> {
     return true;
   }
 
-  is_err<E>(): this is Err<E> {
+  isErr<E>(): this is Err<E> {
     return false;
   }
 
@@ -41,11 +41,11 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   constructor(public err: NonOptional<E>) {}
 
-  is_ok<T>(): this is Ok<T> {
+  isOk<T>(): this is Ok<T> {
     return false;
   }
 
-  is_err(): this is Err<E> {
+  isErr(): this is Err<E> {
     return true;
   }
 
