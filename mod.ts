@@ -16,6 +16,7 @@ export interface Resultable<T, E> {
   mapOr<U>(or: U, fn: (ok: T) => U): U;
   mapOrElse<U>(orElse: (err: E) => U, fn: (ok: T) => U): U;
   mapErr<F>(fn: (err: E) => NonOptional<F>): Result<T, F>;
+  inspect(fn: (ok: T) => void): this;
   unwrap(): T | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
@@ -64,6 +65,11 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   }
 
   mapErr(): this {
+    return this;
+  }
+
+  inspect(fn: (ok: T) => void): this {
+    fn(this.ok);
     return this;
   }
 
@@ -127,6 +133,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   mapErr<F>(fn: (err: E) => NonOptional<F>): Err<F> {
     return Err.from(fn(this.err));
+  }
+
+  inspect(): this {
+    return this;
   }
 
   unwrap(): never {

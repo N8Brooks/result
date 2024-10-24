@@ -114,6 +114,21 @@ describe("mapErr", () => {
   });
 });
 
+describe("inspect", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 1 },
+    { name: "err", result: Err.from(1), expected: 0 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      let actual = 0;
+      result.inspect((value) => {
+        actual = value;
+      });
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("unwrap", () => {
   it("ok", () => {
     const ok = Ok.from(1);
