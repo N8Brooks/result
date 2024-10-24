@@ -13,9 +13,7 @@ Deno.test("isErr", () => {
 
 Deno.test("unwrap", () => {
   const result = new Err(1);
-  assertThrows(() => {
-    result.unwrap();
-  });
+  assertThrows(() => result.unwrap());
 });
 
 Deno.test("unwrapErr", () => {
