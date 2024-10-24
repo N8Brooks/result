@@ -15,16 +15,23 @@ interface Resultable<T, E> {
   mapOr<U>(or: U, fn: (ok: T) => U): U;
   mapOrElse<U>(orElse: (err: E) => U, fn: (ok: T) => U): U;
   mapErr<F>(fn: (err: E) => NonOptional<F>): Result<T, F>;
+  mapErrAsync<F>(
+    fn: (err: E) => Promise<NonOptional<F>>,
+  ): Promise<Result<T, F>>;
   inspect(fn: (ok: T) => void): this;
+  inspectAsync(fn: (ok: T) => Promise<void>): Promise<this>;
   inspectErr(fn: (err: E) => void): this;
+  inspectErrAsync(fn: (err: E) => Promise<void>): Promise<this>;
   expect(msg: string): T | never;
   unwrap(): T | never;
   expectErr(msg: string): E | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
   andThen<U>(fn: (ok: T) => Result<U, E>): Result<U, E>;
+  andThenAsync<U>(fn: (ok: T) => Promise<Result<U, E>>): Promise<Result<U, E>>;
   or(res: Result<T, E>): Result<T, E>;
   orElse<F>(fn: (err: E) => Result<T, F>): Result<T, F>;
+  orElseAsync<F>(fn: (err: E) => Promise<Result<T, F>>): Promise<Result<T, F>>;
   unwrapOr(or: T): T;
   unwrapOrElse(fn: (err: E) => T): T;
   transpose(): Result<E, T>;
@@ -91,13 +98,26 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return this;
   }
 
+  mapErrAsync(): Promise<this> {
+    return Promise.resolve(this); // Promise.resolve is unecessary, but fixes the type
+  }
+
   inspect(fn: (ok: T) => void): this {
     fn(this.ok);
     return this;
   }
 
+  async inspectAsync(fn: (ok: T) => Promise<void>): Promise<this> {
+    await fn(this.ok);
+    return this;
+  }
+
   inspectErr(): this {
     return this;
+  }
+
+  inspectErrAsync(): Promise<this> {
+    return Promise.resolve(this); // Promise.resolve is unecessary, but fixes the type
   }
 
   expect(): T {
@@ -124,12 +144,22 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return fn(this.ok);
   }
 
+  andThenAsync<U, E>(
+    fn: (ok: T) => Promise<Result<U, E>>,
+  ): Promise<Result<U, E>> {
+    return fn(this.ok);
+  }
+
   or(): this {
     return this;
   }
 
   orElse(): this {
     return this;
+  }
+
+  orElseAsync(): Promise<this> {
+    return Promise.resolve(this); // Promise.resolve is unecessary, but fixes the type
   }
 
   unwrapOr(): T {
@@ -204,12 +234,27 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return Err.from(fn(this.err));
   }
 
+  async mapErrAsync<F>(
+    fn: (err: E) => Promise<NonOptional<F>>,
+  ): Promise<Err<F>> {
+    return Err.from(await fn(this.err));
+  }
+
   inspect(): this {
     return this;
   }
 
+  inspectAsync(): Promise<this> {
+    return Promise.resolve(this); // Promise.resolve is unecessary, but fixes the type
+  }
+
   inspectErr(fn: (err: E) => void): this {
     fn(this.err);
+    return this;
+  }
+
+  async inspectErrAsync(fn: (err: E) => Promise<void>): Promise<this> {
+    await fn(this.err);
     return this;
   }
 
@@ -237,11 +282,21 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return this;
   }
 
+  andThenAsync(): Promise<this> {
+    return Promise.resolve(this); // Promise.resolve is unecessary, but fixes the type
+  }
+
   or<T>(res: Result<T, E>): Result<T, E> {
     return res;
   }
 
   orElse<T, F>(fn: (err: E) => Result<T, F>): Result<T, F> {
+    return fn(this.err);
+  }
+
+  orElseAsync<T, F>(
+    fn: (err: E) => Promise<Result<T, F>>,
+  ): Promise<Result<T, F>> {
     return fn(this.err);
   }
 

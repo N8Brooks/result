@@ -121,6 +121,21 @@ describe("mapOrElse", () => {
   });
 });
 
+describe("mapOrElseAsync", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 2 },
+    { name: "err", result: Err.from(1), expected: 3 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, async () => {
+      const actual = await result.mapOrElse(
+        () => Promise.resolve(3),
+        () => Promise.resolve(2),
+      );
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("mapErr", () => {
   [
     { name: "ok", result: Ok.from(1), expected: Ok.from(1) },
@@ -128,6 +143,18 @@ describe("mapErr", () => {
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.mapErr(() => 2);
+      assertEquals(actual, expected);
+    });
+  });
+});
+
+describe("mapErrAsync", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: Ok.from(1) },
+    { name: "err", result: Err.from(1), expected: Err.from(2) },
+  ].forEach(({ name, result, expected }) => {
+    it(name, async () => {
+      const actual = await result.mapErrAsync(() => Promise.resolve(2));
       assertEquals(actual, expected);
     });
   });
@@ -148,6 +175,22 @@ describe("inspect", () => {
   });
 });
 
+describe("inpsectAsync", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 1 },
+    { name: "err", result: Err.from(1), expected: 0 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, async () => {
+      let actual = 0;
+      await result.inspectAsync((value) => {
+        actual = value;
+        return Promise.resolve();
+      });
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("inspectErr", () => {
   [
     { name: "ok", result: Ok.from(1), expected: 0 },
@@ -157,6 +200,22 @@ describe("inspectErr", () => {
       let actual = 0;
       result.inspectErr(() => {
         actual = 1;
+      });
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
+describe("inspectErrAsync", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 0 },
+    { name: "err", result: Err.from(1), expected: 1 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, async () => {
+      let actual = 0;
+      await result.inspectErrAsync(() => {
+        actual = 1;
+        return Promise.resolve();
       });
       assertStrictEquals(actual, expected);
     });
@@ -252,6 +311,21 @@ describe("andThen", () => {
   });
 });
 
+describe("andThenAsync", () => {
+  [
+    { name: "ok ok", a: Ok.from(1), b: Ok.from("b"), key: "b" },
+    { name: "ok err", a: Ok.from(1), b: Err.from(2), key: "b" },
+    { name: "err ok", a: Err.from(1), b: Ok.from("b"), key: "a" },
+    { name: "err err", a: Err.from(1), b: Err.from(2), key: "a" },
+  ].forEach(({ name, a, b, key }) => {
+    it(name, async () => {
+      const actual = await a.andThenAsync((_a) => Promise.resolve(b));
+      const expected = key === "a" ? a : b;
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("or", () => {
   [
     { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "a" },
@@ -276,6 +350,21 @@ describe("orElse", () => {
   ].forEach(({ name, a, b, key }) => {
     it(name, () => {
       const actual = a.orElse((_a) => b);
+      const expected = key === "a" ? a : b;
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
+describe("orElseAsync", () => {
+  [
+    { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "a" },
+    { name: "ok err", a: Ok.from(1), b: Err.from("b"), key: "a" },
+    { name: "err ok", a: Err.from(1), b: Ok.from(2), key: "b" },
+    { name: "err err", a: Err.from(1), b: Err.from("b"), key: "b" },
+  ].forEach(({ name, a, b, key }) => {
+    it(name, async () => {
+      const actual = await a.orElseAsync((_a) => Promise.resolve(b));
       const expected = key === "a" ? a : b;
       assertStrictEquals(actual, expected);
     });
