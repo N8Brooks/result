@@ -27,6 +27,7 @@ export interface Resultable<T, E> {
   andThen<U>(fn: (ok: T) => Result<U, E>): Result<U, E>;
   or(res: Result<T, E>): Result<T, E>;
   orElse<F>(fn: (err: E) => Result<T, F>): Result<T, F>;
+  unwrapOr(or: T): T;
 }
 
 export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
@@ -128,6 +129,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   orElse(): this {
     return this;
   }
+
+  unwrapOr(): T {
+    return this.ok;
+  }
 }
 
 export class Err<E> implements InnerErr<E>, Resultable<never, E> {
@@ -225,6 +230,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   orElse<T, F>(fn: (err: E) => Result<T, F>): Result<T, F> {
     return fn(this.err);
+  }
+
+  unwrapOr<T>(or: T): T {
+    return or;
   }
 }
 

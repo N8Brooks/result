@@ -281,3 +281,15 @@ describe("orElse", () => {
     });
   });
 });
+
+describe("unwrapOr", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 1 },
+    { name: "err", result: Err.from(1), expected: 2 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.unwrapOr(2);
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
