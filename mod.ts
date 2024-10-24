@@ -46,7 +46,7 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return res;
   }
 
-  or<E>(_res: Result<T, E>): Ok<T> {
+  or<E>(_res: Result<T, E>): this {
     return this;
   }
 }
