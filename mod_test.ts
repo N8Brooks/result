@@ -1,6 +1,6 @@
 import { describe, it } from "@std/testing/bdd";
 import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
-import { Err, Ok } from "./mod.ts";
+import { Err, fromIter, Ok } from "./mod.ts";
 import { Result } from "./mod.ts";
 
 describe("iter", () => {
@@ -325,6 +325,28 @@ describe("clone", () => {
   ].forEach(({ name, expected }) => {
     it(name, () => {
       const actual = expected.clone();
+      assertEquals(actual, expected);
+    });
+  });
+});
+
+describe("fromIter", () => {
+  [
+    { name: "ok empty", results: [], expected: Ok.from([]) },
+    {
+      name: "ok",
+      results: [Ok.from(1), Ok.from(2)],
+      expected: Ok.from([1, 2]),
+    },
+    { name: "err", results: [Ok.from(1), Err.from(2)], expected: Err.from(2) },
+    {
+      name: "first err",
+      results: [Err.from(1), Ok.from(2)],
+      expected: Err.from(1),
+    },
+  ].forEach(({ name, results, expected }) => {
+    it(name, () => {
+      const actual = fromIter(results);
       assertEquals(actual, expected);
     });
   });

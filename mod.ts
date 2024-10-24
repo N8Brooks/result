@@ -263,3 +263,39 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 }
 
 export type Result<T, E> = Ok<T> | Err<E>;
+
+/** Takes each element in the `Iterable`: if it is an `Err`, no further elements are taken, and the `Err` is returned.
+ * Should no `Err` occur, an `Array` with the `ok` of each `Result` is returned.
+ *
+ * Here is an example:
+ * ```ts
+ * import { Ok, fromIter } from "./mod.ts";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const results = [Ok.from(1), Ok.from(2)];
+ * const result = fromIter(results);
+ * assertEquals(result, Ok.from([1, 2]));
+ * ```
+ *
+ * Here is another example that shows that the first `Err` is returned:
+ * ```ts
+ * import { Ok, Err, fromIter } from "./mod.ts";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const results = [Ok.from(1), Err.from("error"), Err.from("error 2")];
+ * const result = fromIter(results);
+ * assertEquals(result, Err.from("error"));
+ * ```
+ */
+export function fromIter<T, E>(
+  results: Iterable<Result<T, E>>,
+): Result<T[], E> {
+  const oks = [];
+  for (const res of results) {
+    if (res.isErr()) {
+      return res;
+    }
+    oks.push(res.ok);
+  }
+  return Ok.from(oks);
+}
