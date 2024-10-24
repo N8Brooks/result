@@ -50,7 +50,7 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   }
 
   unwrap(): never {
-    throw new Error(`unwrap called on an Err value`);
+    throw new Error("unwrap called on an Err value");
   }
 }
 
