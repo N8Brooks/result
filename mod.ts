@@ -21,6 +21,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
 
   constructor(public ok: NonOptional<T>) {}
 
+  static from<T>(ok: NonOptional<T>): Ok<T> {
+    return new Ok(ok);
+  }
+
   isOk(): this is Ok<T> {
     return true;
   }
@@ -42,14 +46,14 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   }
 }
 
-export function ok<T>(value: NonOptional<T>): Ok<T> {
-  return new Ok(value);
-}
-
 export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   ok!: never;
 
   constructor(public err: NonOptional<E>) {}
+
+  static from<E>(err: NonOptional<E>): Err<E> {
+    return new Err(err);
+  }
 
   isOk<T>(): this is Ok<T> {
     return false;
@@ -70,8 +74,4 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   or<T>(res: Result<T, E>): Result<T, E> {
     return res;
   }
-}
-
-export function err<E>(value: NonOptional<E>): Err<E> {
-  return new Err(value);
 }
