@@ -2,6 +2,24 @@ import { describe, it } from "@std/testing/bdd";
 import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
 import { Err, Ok } from "./mod.ts";
 
+describe("iter", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: [1] },
+    { name: "err", result: Err.from(1), expected: [] },
+  ].forEach(({ name, result, expected }) => {
+    it(`${name} iterator`, () => {
+      const actual = [...result];
+      assertEquals(actual, expected);
+    });
+
+    it(`${name} iterator iterable`, () => {
+      const it = result[Symbol.iterator]();
+      const actual = [...it];
+      assertEquals(actual, expected);
+    });
+  });
+});
+
 describe("isOk", () => {
   [
     { name: "ok", result: Ok.from(1), isOk: true },
@@ -123,6 +141,21 @@ describe("inspect", () => {
       let actual = 0;
       result.inspect((value) => {
         actual = value;
+      });
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
+describe("inspectErr", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 0 },
+    { name: "err", result: Err.from(1), expected: 1 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      let actual = 0;
+      result.inspectErr(() => {
+        actual = 1;
       });
       assertStrictEquals(actual, expected);
     });

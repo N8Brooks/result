@@ -7,6 +7,7 @@ export type InnerErr<E> = { ok?: never; err: NonOptional<E> };
 export type InnerResult<T, E> = InnerOk<T> | InnerErr<E>;
 
 export interface Resultable<T, E> {
+  [Symbol.iterator](): IterableIterator<T | never>;
   isOk(): this is Ok<T>;
   isOkAnd(fn: (ok: T) => boolean): this is Ok<T>;
   isErr(): this is Err<E>;
@@ -17,6 +18,7 @@ export interface Resultable<T, E> {
   mapOrElse<U>(orElse: (err: E) => U, fn: (ok: T) => U): U;
   mapErr<F>(fn: (err: E) => NonOptional<F>): Result<T, F>;
   inspect(fn: (ok: T) => void): this;
+  inspectErr(fn: (err: E) => void): this;
   unwrap(): T | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
@@ -30,6 +32,20 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
 
   static from<T>(ok: NonOptional<T>): Ok<T> {
     return new Ok(ok);
+  }
+
+  [Symbol.iterator](): IterableIterator<T> {
+    let ran = false;
+    return {
+      next: () => {
+        return ran
+          ? { value: undefined, done: true }
+          : (ran = true, { value: this.ok });
+      },
+      [Symbol.iterator]() {
+        return this;
+      },
+    };
   }
 
   isOk(): this is this {
@@ -73,6 +89,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return this;
   }
 
+  inspectErr(): this {
+    return this;
+  }
+
   unwrap(): T {
     return this.ok;
   }
@@ -97,6 +117,17 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   static from<E>(err: NonOptional<E>): Err<E> {
     return new Err(err);
+  }
+
+  [Symbol.iterator](): IterableIterator<never> {
+    return {
+      next: () => {
+        return { value: undefined, done: true };
+      },
+      [Symbol.iterator]() {
+        return this;
+      },
+    };
   }
 
   isOk(): this is Ok<never> {
@@ -136,6 +167,11 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   }
 
   inspect(): this {
+    return this;
+  }
+
+  inspectErr(fn: (err: E) => void): this {
+    fn(this.err);
     return this;
   }
 
