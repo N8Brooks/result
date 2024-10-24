@@ -102,6 +102,18 @@ describe("mapOrElse", () => {
   });
 });
 
+describe("mapErr", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: Ok.from(1) },
+    { name: "err", result: Err.from(1), expected: Err.from(2) },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.mapErr(() => 2);
+      assertEquals(actual, expected);
+    });
+  });
+});
+
 describe("unwrap", () => {
   it("ok", () => {
     const ok = Ok.from(1);
