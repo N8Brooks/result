@@ -1,5 +1,5 @@
 import { describe, it } from "@std/testing/bdd";
-import { assertStrictEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
 import { Err, Ok } from "./mod.ts";
 
 describe("isOk", () => {
@@ -20,6 +20,18 @@ describe("isErr", () => {
   ].forEach(({ name, result, isErr }) => {
     it(name, () => {
       assertStrictEquals(result.isErr(), isErr);
+    });
+  });
+});
+
+describe("map", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: Ok.from(2) },
+    { name: "err", result: Err.from(1), expected: Err.from(1) },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.map((value) => value + 1);
+      assertEquals(actual, expected);
     });
   });
 });

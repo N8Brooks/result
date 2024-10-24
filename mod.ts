@@ -9,6 +9,7 @@ export type InnerResult<T, E> = InnerOk<T> | InnerErr<E>;
 export interface Resultable<T, E> {
   isOk(): this is Ok<T>;
   isErr(): this is Err<E>;
+  map<U>(fn: (value: T) => NonOptional<U>): Result<U, E>;
   unwrap(): T | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
@@ -32,6 +33,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
 
   isErr<E>(): this is Err<E> {
     return false;
+  }
+
+  map<U>(fn: (value: T) => NonOptional<U>): Ok<U> {
+    return Ok.from(fn(this.ok));
   }
 
   unwrap(): T {
@@ -66,6 +71,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   isErr(): this is Err<E> {
     return true;
+  }
+
+  map<U>(_fn: (value: never) => NonOptional<U>): this {
+    return this;
   }
 
   unwrap(): never {
