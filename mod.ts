@@ -29,8 +29,8 @@ export interface Resultable<T, E> {
   orElse<F>(fn: (err: E) => Result<T, F>): Result<T, F>;
   unwrapOr(or: T): T;
   unwrapOrElse(fn: (err: E) => T): T;
-  clone(): Result<T, E>;
   transpose(): Result<E, T>;
+  clone(): Result<T, E>;
 }
 
 export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
@@ -141,12 +141,12 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return this.ok;
   }
 
-  clone(): Ok<T> {
-    return Ok.from(this.ok);
-  }
-
   transpose(): Err<T> {
     return Err.from(this.ok);
+  }
+
+  clone(): Ok<T> {
+    return Ok.from(this.ok);
   }
 }
 
@@ -255,12 +255,12 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return fn(this.err);
   }
 
-  clone(): Err<E> {
-    return Err.from(this.err);
-  }
-
   transpose(): Ok<E> {
     return Ok.from(this.err);
+  }
+
+  clone(): Err<E> {
+    return Err.from(this.err);
   }
 }
 

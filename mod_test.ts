@@ -306,18 +306,6 @@ describe("unwrapOrElse", () => {
   });
 });
 
-describe("clone", () => {
-  [
-    { name: "ok", expected: Ok.from(1) },
-    { name: "err", expected: Err.from(1) },
-  ].forEach(({ name, expected }) => {
-    it(name, () => {
-      const actual = expected.clone();
-      assertEquals(actual, expected);
-    });
-  });
-});
-
 describe("transpose", () => {
   [
     { name: "ok", result: Ok.from(1), expected: Err.from(1) },
@@ -325,6 +313,18 @@ describe("transpose", () => {
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.transpose();
+      assertEquals(actual, expected);
+    });
+  });
+});
+
+describe("clone", () => {
+  [
+    { name: "ok", expected: Ok.from(1) },
+    { name: "err", expected: Err.from(1) },
+  ].forEach(({ name, expected }) => {
+    it(name, () => {
+      const actual = expected.clone();
       assertEquals(actual, expected);
     });
   });
