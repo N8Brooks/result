@@ -31,19 +31,19 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return new Ok(ok);
   }
 
-  isOk(): this is Ok<T> {
+  isOk(): this is this {
     return true;
   }
 
-  isOkAnd(fn: (value: T) => boolean): this is Ok<T> {
+  isOkAnd(fn: (value: T) => boolean): this is this {
     return fn(this.ok);
   }
 
-  isErr<E>(): this is Err<E> {
+  isErr(): this is Err<never> {
     return false;
   }
 
-  isErrAnd<E>(_fn: (value: E) => boolean): this is Err<E> {
+  isErrAnd(): this is Err<never> {
     return false;
   }
 
@@ -79,7 +79,7 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return res;
   }
 
-  or<E>(_res: Result<T, E>): this {
+  or(): this {
     return this;
   }
 }
@@ -93,11 +93,11 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return new Err(err);
   }
 
-  isOk<T>(): this is Ok<T> {
+  isOk(): this is Ok<never> {
     return false;
   }
 
-  isOkAnd<T>(_fn: (value: T) => boolean): this is Ok<T> {
+  isOkAnd(): this is Ok<never> {
     return false;
   }
 
@@ -109,7 +109,7 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return fn(this.err);
   }
 
-  map<U>(_fn: (value: never) => NonOptional<U>): this {
+  map(): this {
     return this;
   }
 
@@ -117,11 +117,11 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return Promise.resolve(this); // Promise.resolve is unecessary, but fixes the type
   }
 
-  mapOr<U>(default_: U, _fn: (value: never) => U): U {
+  mapOr<U>(default_: U): U {
     return default_;
   }
 
-  mapOrElse<U>(default_: (value: E) => U, _fn: (value: never) => U): U {
+  mapOrElse<U>(default_: (value: E) => U): U {
     return default_(this.err);
   }
 
@@ -137,7 +137,7 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return this.err;
   }
 
-  and<T>(_res: Result<T, E>): this {
+  and(): this {
     return this;
   }
 

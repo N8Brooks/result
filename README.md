@@ -32,6 +32,7 @@ We could remove parameters in `Ok` and `Err` that are not relevant.
 This would mean `Result`s that we know are `Err` could not call `Err.map` with parameters.
 This could be a good thing because `Err.map` is just an identity function and it shows clients it's kind of useless if we know it is an `Err`.
 Could we go any further? Could we hide the `Err.map` function for types we know are `Err` and only expose it through `Result`?
+For now, I'll remove the extraneous parameters. This cannot be done for things like the first argument.
 
 ### Non Optional
 
