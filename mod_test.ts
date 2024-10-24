@@ -186,7 +186,10 @@ describe("unwrap", () => {
 
   it("err", () => {
     const err = Err.from(1);
-    assertThrows(() => err.unwrap());
+    const error = assertThrows(() => err.unwrap());
+    const actual = error instanceof Error ? error.message : undefined;
+    const expected = "unwrap called on an Err value";
+    assertStrictEquals(actual, expected);
   });
 });
 
