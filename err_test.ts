@@ -17,3 +17,8 @@ Deno.test("unwrap", () => {
     result.unwrap();
   });
 });
+
+Deno.test("unwrapErr", () => {
+  const result = new Err(1);
+  assertStrictEquals(result.unwrapErr(), 1);
+});

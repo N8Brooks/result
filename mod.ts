@@ -4,6 +4,7 @@ interface Resultable<T, E> {
   isOk(): this is Ok<T>;
   isErr(): this is Err<E>;
   unwrap(): T | never;
+  unwrapErr(): E | never;
 }
 
 export type InnerOk<T> = { ok: NonOptional<T>; err?: never };
@@ -30,6 +31,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   unwrap(): T {
     return this.ok;
   }
+
+  unwrapErr(): never {
+    throw new Error("unwrapErr called on an Ok value")
+  }
 }
 
 export function ok<T>(value: NonOptional<T>): Ok<T> {
@@ -51,6 +56,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   unwrap(): never {
     throw new Error("unwrap called on an Err value");
+  }
+
+  unwrapErr(): E {
+    return this.err;
   }
 }
 
