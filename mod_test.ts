@@ -162,6 +162,22 @@ describe("inspectErr", () => {
   });
 });
 
+describe("expect", () => {
+  it("ok", () => {
+    const ok = Ok.from(1);
+    assertStrictEquals(ok.expect(), 1);
+  });
+
+  it("err", () => {
+    const err = Err.from(1);
+    const message = "message";
+    const error = assertThrows(() => err.expect(message));
+    const actual = error instanceof Error ? error.message : undefined;
+    const expected = `${message}: expect called on an Err value`;
+    assertStrictEquals(actual, expected);
+  });
+});
+
 describe("unwrap", () => {
   it("ok", () => {
     const ok = Ok.from(1);

@@ -19,6 +19,7 @@ export interface Resultable<T, E> {
   mapErr<F>(fn: (err: E) => NonOptional<F>): Result<T, F>;
   inspect(fn: (ok: T) => void): this;
   inspectErr(fn: (err: E) => void): this;
+  expect(msg: string): T | never;
   unwrap(): T | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
@@ -91,6 +92,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
 
   inspectErr(): this {
     return this;
+  }
+
+  expect(): T {
+    return this.ok;
   }
 
   unwrap(): T {
@@ -173,6 +178,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   inspectErr(fn: (err: E) => void): this {
     fn(this.err);
     return this;
+  }
+
+  expect(msg: string): never {
+    throw new Error(`${msg}: expect called on an Err value`);
   }
 
   unwrap(): never {
