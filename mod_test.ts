@@ -84,7 +84,7 @@ describe("mapOr", () => {
     { name: "err", result: Err.from(1), expected: 3 },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
-      const actual = result.mapOr((value) => value + 1, 3);
+      const actual = result.mapOr(3, (value) => value + 1);
       assertStrictEquals(actual, expected);
     });
   });
