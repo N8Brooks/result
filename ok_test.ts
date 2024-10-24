@@ -10,3 +10,8 @@ Deno.test("is_err", () => {
   const result = new Ok(1);
   assertStrictEquals(result.is_err(), false);
 });
+
+Deno.test("unwrap", () => {
+  const result = new Ok(1);
+  assertStrictEquals(result.unwrap(), 1);
+});
