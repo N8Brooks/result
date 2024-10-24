@@ -266,3 +266,18 @@ describe("or", () => {
     });
   });
 });
+
+describe("orElse", () => {
+  [
+    { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "a" },
+    { name: "ok err", a: Ok.from(1), b: Err.from("b"), key: "a" },
+    { name: "err ok", a: Err.from(1), b: Ok.from(2), key: "b" },
+    { name: "err err", a: Err.from(1), b: Err.from("b"), key: "b" },
+  ].forEach(({ name, a, b, key }) => {
+    it(name, () => {
+      const actual = a.orElse((_a) => b);
+      const expected = key === "a" ? a : b;
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
