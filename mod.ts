@@ -4,7 +4,7 @@ export type InnerOk<T> = { ok: NonOptional<T>; err?: never };
 
 export type InnerErr<E> = { ok?: never; err: NonOptional<E> };
 
-export type InnerResult<T, E> = Ok<T> | Err<E>;
+export type InnerResult<T, E> = InnerOk<T> | InnerErr<E>;
 
 export interface Resultable<T, E> {
   isOk(): this is Ok<T>;
