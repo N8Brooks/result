@@ -293,3 +293,39 @@ describe("unwrapOr", () => {
     });
   });
 });
+
+describe("unwrapOrElse", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 1 },
+    { name: "err", result: Err.from(1), expected: 2 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.unwrapOrElse((err) => err + 1);
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
+describe("clone", () => {
+  [
+    { name: "ok", expected: Ok.from(1) },
+    { name: "err", expected: Err.from(1) },
+  ].forEach(({ name, expected }) => {
+    it(name, () => {
+      const actual = expected.clone();
+      assertEquals(actual, expected);
+    });
+  });
+});
+
+describe("transpose", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: Err.from(1) },
+    { name: "err", result: Err.from(1), expected: Ok.from(1) },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.transpose();
+      assertEquals(actual, expected);
+    });
+  });
+});
