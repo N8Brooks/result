@@ -21,6 +21,7 @@ export interface Resultable<T, E> {
   inspectErr(fn: (err: E) => void): this;
   expect(msg: string): T | never;
   unwrap(): T | never;
+  expectErr(msg: string): E | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
   or(res: Result<T, E>): Result<T, E>;
@@ -100,6 +101,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
 
   unwrap(): T {
     return this.ok;
+  }
+
+  expectErr(msg: string): never {
+    throw new Error(`${msg}: expectErr called on an Ok value`);
   }
 
   unwrapErr(): never {
@@ -186,6 +191,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   unwrap(): never {
     throw new Error("unwrap called on an Err value");
+  }
+
+  expectErr(): E {
+    return this.err;
   }
 
   unwrapErr(): E {

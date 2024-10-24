@@ -1,6 +1,7 @@
 import { describe, it } from "@std/testing/bdd";
 import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
 import { Err, Ok } from "./mod.ts";
+import { Result } from "./mod.ts";
 
 describe("iter", () => {
   [
@@ -164,8 +165,8 @@ describe("inspectErr", () => {
 
 describe("expect", () => {
   it("ok", () => {
-    const ok = Ok.from(1);
-    assertStrictEquals(ok.expect(), 1);
+    const ok = Ok.from(1) as Result<number, number>;
+    assertStrictEquals(ok.expect("message"), 1);
   });
 
   it("err", () => {
@@ -190,6 +191,22 @@ describe("unwrap", () => {
     const actual = error instanceof Error ? error.message : undefined;
     const expected = "unwrap called on an Err value";
     assertStrictEquals(actual, expected);
+  });
+});
+
+describe("expectErr", () => {
+  it("ok", () => {
+    const ok = Ok.from(1);
+    const message = "message";
+    const error = assertThrows(() => ok.expectErr(message));
+    const actual = error instanceof Error ? error.message : undefined;
+    const expected = `${message}: expectErr called on an Ok value`;
+    assertStrictEquals(actual, expected);
+  });
+
+  it("err", () => {
+    const err = Err.from(1) as Result<number, number>;
+    assertStrictEquals(err.expectErr("message"), 1);
   });
 });
 
