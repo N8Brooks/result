@@ -237,6 +237,21 @@ describe("and", () => {
   });
 });
 
+describe("andThen", () => {
+  [
+    { name: "ok ok", a: Ok.from(1), b: Ok.from("b"), key: "b" },
+    { name: "ok err", a: Ok.from(1), b: Err.from(2), key: "b" },
+    { name: "err ok", a: Err.from(1), b: Ok.from("b"), key: "a" },
+    { name: "err err", a: Err.from(1), b: Err.from(2), key: "a" },
+  ].forEach(({ name, a, b, key }) => {
+    it(name, () => {
+      const actual = a.andThen((_a) => b);
+      const expected = key === "a" ? a : b;
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("or", () => {
   [
     { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "a" },

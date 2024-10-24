@@ -24,6 +24,7 @@ export interface Resultable<T, E> {
   expectErr(msg: string): E | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
+  andThen<U>(fn: (ok: T) => Result<U, E>): Result<U, E>;
   or(res: Result<T, E>): Result<T, E>;
 }
 
@@ -115,6 +116,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return res;
   }
 
+  andThen<U, E>(fn: (ok: T) => Result<U, E>): Result<U, E> {
+    return fn(this.ok);
+  }
+
   or(): this {
     return this;
   }
@@ -202,6 +207,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   }
 
   and(): this {
+    return this;
+  }
+
+  andThen(): this {
     return this;
   }
 
