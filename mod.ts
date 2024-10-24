@@ -1,12 +1,10 @@
 export type NonOptional<T> = T extends undefined ? never : T;
 
-export type InnerOk<T> = { ok: NonOptional<T>; err?: never };
+type InnerOk<T> = { ok: NonOptional<T>; err?: never };
 
-export type InnerErr<E> = { ok?: never; err: NonOptional<E> };
+type InnerErr<E> = { ok?: never; err: NonOptional<E> };
 
-export type InnerResult<T, E> = InnerOk<T> | InnerErr<E>;
-
-export interface Resultable<T, E> {
+interface Resultable<T, E> {
   [Symbol.iterator](): IterableIterator<T | never>;
   isOk(): this is Ok<T>;
   isOkAnd(fn: (ok: T) => boolean): this is Ok<T>;
