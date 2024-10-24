@@ -14,6 +14,7 @@ export interface Resultable<T, E> {
   map<U>(fn: (value: T) => NonOptional<U>): Result<U, E>;
   mapAsync<U>(fn: (value: T) => Promise<NonOptional<U>>): Promise<Result<U, E>>;
   mapOr<U>(default_: U, fn: (value: T) => U): U;
+  mapOrElse<U>(default_: (value: E) => U, fn: (value: T) => U): U;
   unwrap(): T | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
@@ -56,6 +57,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   }
 
   mapOr<U>(_default: U, fn: (value: T) => U): U {
+    return fn(this.ok);
+  }
+
+  mapOrElse<U>(_default: (value: never) => U, fn: (value: T) => U): U {
     return fn(this.ok);
   }
 
@@ -111,6 +116,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   mapOr<U>(default_: U, _fn: (value: never) => U): U {
     return default_;
+  }
+
+  mapOrElse<U>(default_: (value: E) => U, _fn: (value: never) => U): U {
+    return default_(this.err);
   }
 
   unwrap(): never {

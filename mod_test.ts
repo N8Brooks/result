@@ -90,6 +90,18 @@ describe("mapOr", () => {
   });
 });
 
+describe("mapOrElse", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 2 },
+    { name: "err", result: Err.from(1), expected: 3 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.mapOrElse(() => 3, () => 2);
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("unwrap", () => {
   it("ok", () => {
     const ok = Ok.from(1);
