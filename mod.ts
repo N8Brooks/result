@@ -21,8 +21,6 @@ export interface Resultable<T, E> {
   or(res: Result<T, E>): Result<T, E>;
 }
 
-export type Result<T, E> = InnerResult<T, E> & Resultable<T, E>;
-
 export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   err!: never;
 
@@ -138,3 +136,5 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return res;
   }
 }
+
+export type Result<T, E> = Ok<T> | Err<E>;
