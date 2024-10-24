@@ -8,8 +8,11 @@ export type InnerResult<T, E> = InnerOk<T> | InnerErr<E>;
 
 export interface Resultable<T, E> {
   isOk(): this is Ok<T>;
+  isOkAnd(fn: (valud: T) => boolean): this is Ok<T>;
   isErr(): this is Err<E>;
+  isErrAnd(fn: (value: E) => boolean): this is Err<E>;
   map<U>(fn: (value: T) => NonOptional<U>): Result<U, E>;
+  mapAsync<U>(fn: (value: T) => Promise<NonOptional<U>>): Promise<Result<U, E>>;
   unwrap(): T | never;
   unwrapErr(): E | never;
   and(res: Result<T, E>): Result<T, E>;
@@ -31,12 +34,24 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return true;
   }
 
+  isOkAnd(fn: (value: T) => boolean): this is Ok<T> {
+    return fn(this.ok);
+  }
+
   isErr<E>(): this is Err<E> {
+    return false;
+  }
+
+  isErrAnd<E>(_fn: (value: E) => boolean): this is Err<E> {
     return false;
   }
 
   map<U>(fn: (value: T) => NonOptional<U>): Ok<U> {
     return Ok.from(fn(this.ok));
+  }
+
+  async mapAsync<U>(fn: (value: T) => Promise<NonOptional<U>>): Promise<Ok<U>> {
+    return Ok.from(await fn(this.ok));
   }
 
   unwrap(): T {
@@ -69,12 +84,24 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return false;
   }
 
+  isOkAnd<T>(_fn: (value: T) => boolean): this is Ok<T> {
+    return false;
+  }
+
   isErr(): this is Err<E> {
     return true;
   }
 
+  isErrAnd(fn: (value: E) => boolean): this is Err<E> {
+    return fn(this.err);
+  }
+
   map<U>(_fn: (value: never) => NonOptional<U>): this {
     return this;
+  }
+
+  mapAsync(): Promise<this> {
+    return Promise.resolve(this); // Promise.resolve is unecessary, but fixes the type
   }
 
   unwrap(): never {

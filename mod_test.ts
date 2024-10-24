@@ -13,6 +13,20 @@ describe("isOk", () => {
   });
 });
 
+describe("isOkAnd", () => {
+  [
+    { name: "ok and 1 equals 1", result: Ok.from(1), expected: true },
+    { name: "ok and 2 equals 1", result: Ok.from(2), expected: false },
+    { name: "err and 1 equals 1", result: Err.from(1), expected: false },
+    { name: "err and 2 equals 1", result: Err.from(2), expected: false },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.isOkAnd((value) => value === 1);
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("isErr", () => {
   [
     { name: "ok", result: Ok.from(1), isErr: false },
@@ -24,6 +38,20 @@ describe("isErr", () => {
   });
 });
 
+describe("isErrAnd", () => {
+  [
+    { name: "ok and 1 equals 1", result: Ok.from(1), expected: false },
+    { name: "ok and 2 equals 1", result: Ok.from(2), expected: false },
+    { name: "err and 1 equals 1", result: Err.from(1), expected: true },
+    { name: "err and 2 equals 1", result: Err.from(2), expected: false },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.isErrAnd((value) => value === 1);
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("map", () => {
   [
     { name: "ok", result: Ok.from(1), expected: Ok.from(2) },
@@ -31,6 +59,20 @@ describe("map", () => {
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.map((value) => value + 1);
+      assertEquals(actual, expected);
+    });
+  });
+});
+
+describe("mapAsync", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: Ok.from(2) },
+    { name: "err", result: Err.from(1), expected: Err.from(1) },
+  ].forEach(({ name, result, expected }) => {
+    it(name, async () => {
+      const actual = await result.mapAsync((value) =>
+        Promise.resolve(value + 1)
+      );
       assertEquals(actual, expected);
     });
   });
