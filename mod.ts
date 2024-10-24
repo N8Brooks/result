@@ -1,8 +1,8 @@
 export type NonOptional<T> = T extends undefined ? never : T;
 
-type InnerOk<T> = { ok: NonOptional<T>; err?: never };
+type InnerOk<T> = Readonly<{ ok: NonOptional<T>; err?: never }>;
 
-type InnerErr<E> = { ok?: never; err: NonOptional<E> };
+type InnerErr<E> = Readonly<{ ok?: never; err: NonOptional<E> }>;
 
 interface Resultable<T, E> {
   [Symbol.iterator](): IterableIterator<T | never>;
@@ -31,10 +31,11 @@ interface Resultable<T, E> {
   clone(): Result<T, E>;
 }
 
+/** Contains the success value of a `Result`. */
 export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
-  err!: never;
+  readonly err!: never;
 
-  constructor(public ok: NonOptional<T>) {}
+  constructor(public readonly ok: NonOptional<T>) {}
 
   static from<T>(ok: NonOptional<T>): Ok<T> {
     return new Ok(ok);
@@ -148,10 +149,11 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   }
 }
 
+/** Contains the error value of a `Result`. */
 export class Err<E> implements InnerErr<E>, Resultable<never, E> {
-  ok!: never;
+  readonly ok!: never;
 
-  constructor(public err: NonOptional<E>) {}
+  constructor(public readonly err: NonOptional<E>) {}
 
   static from<E>(err: NonOptional<E>): Err<E> {
     return new Err(err);
@@ -159,9 +161,7 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   [Symbol.iterator](): IterableIterator<never> {
     return {
-      next: () => {
-        return { value: undefined, done: true };
-      },
+      next: () => ({ value: undefined, done: true }),
       [Symbol.iterator]() {
         return this;
       },
