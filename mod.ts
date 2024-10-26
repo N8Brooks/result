@@ -62,11 +62,11 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     };
   }
 
-  isOk(): this is this {
+  isOk(): this is Ok<T> {
     return true;
   }
 
-  isOkAnd(fn: (ok: T) => boolean): this is this {
+  isOkAnd(fn: (ok: T) => boolean): this is Ok<T> {
     return fn(this.ok);
   }
 
@@ -136,17 +136,21 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     throw new Error("unwrapErr called on an Ok value");
   }
 
-  and<E>(res: Result<T, E>): Result<T, E> {
+  and<E, R extends Result<T, E>>(this: Result<T, E>, res: R): R {
     return res;
   }
 
-  andThen<U, E>(fn: (ok: T) => Result<U, E>): Result<U, E> {
+  andThen<U, E, R extends Result<U, E>>(
+    this: Result<T, E>,
+    fn: (ok: T) => R,
+  ): R {
     return fn(this.ok);
   }
 
-  andThenAsync<U, E>(
-    fn: (ok: T) => Promise<Result<U, E>>,
-  ): Promise<Result<U, E>> {
+  andThenAsync<U, E, R extends Result<U, E>>(
+    this: Result<T, E>,
+    fn: (ok: T) => Promise<R>,
+  ): Promise<R> {
     return fn(this.ok);
   }
 
@@ -286,17 +290,17 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return Promise.resolve(this); // Promise.resolve is unecessary, but fixes the type
   }
 
-  or<T>(res: Result<T, E>): Result<T, E> {
+  or<T, R extends Result<T, E>>(this: Result<T, E>, res: R): R {
     return res;
   }
 
-  orElse<T, F>(fn: (err: E) => Result<T, F>): Result<T, F> {
+  orElse<T, F, R extends Result<T, F>>(fn: (err: E) => R): R {
     return fn(this.err);
   }
 
-  orElseAsync<T, F>(
-    fn: (err: E) => Promise<Result<T, F>>,
-  ): Promise<Result<T, F>> {
+  orElseAsync<T, F, R extends Result<T, F>>(
+    fn: (err: E) => Promise<R>,
+  ): Promise<R> {
     return fn(this.err);
   }
 

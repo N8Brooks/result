@@ -1,7 +1,6 @@
 import { describe, it } from "@std/testing/bdd";
 import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
-import { Err, fromIter, Ok } from "./mod.ts";
-import { Result } from "./mod.ts";
+import { Err, fromIter, Ok, Result } from "./mod.ts";
 
 describe("iter", () => {
   [
@@ -224,7 +223,7 @@ describe("inspectErrAsync", () => {
 
 describe("expect", () => {
   it("ok", () => {
-    const ok = Ok.from(1) as Result<number, number>;
+    const ok = Ok.from(1) as Result<number, never>;
     assertStrictEquals(ok.expect("message"), 1);
   });
 
@@ -264,7 +263,7 @@ describe("expectErr", () => {
   });
 
   it("err", () => {
-    const err = Err.from(1) as Result<number, number>;
+    const err = Err.from(1) as Result<never, number>;
     assertStrictEquals(err.expectErr("message"), 1);
   });
 });

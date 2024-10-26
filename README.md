@@ -32,7 +32,7 @@ We could remove parameters in `Ok` and `Err` that are not relevant.
 This would mean `Result`s that we know are `Err` could not call `Err.map` with parameters.
 This could be a good thing because `Err.map` is just an identity function and it shows clients it's kind of useless if we know it is an `Err`.
 Could we go any further? Could we hide the `Err.map` function for types we know are `Err` and only expose it through `Result`?
-For now, I'll remove the extraneous parameters. This cannot be done for things like the first argument.
+For now, I'll remove the extraneous parameters. This cannot be done for things like the first argument. Adding them will be a non-breaking change.
 
 ### Non Optional
 
@@ -48,5 +48,20 @@ I'll leave in `NonOptional` for the time being. There are tradeoffs, but removin
 
 You can use methods that do not return a `Result` with strategies that return a `Promise`. However, methods that return a `Result` can become a little hairy.
 To help with these situations there are async sister methods for methods like `map`, such as `mapAsync`. These return a `Promise<Result>`.
-It would be nice if TypeScript was a bit more leniant. Some of the implementations do not require `await`. Since using `await` on things that are not a `Promise`
-resolve immediately, we could use operator overloading to minimize the surface area of the API.
+~~It would be nice if TypeScript was a bit more leniant. Some of the implementations do not require `await`. Since using `await` on things that are not a `Promise`
+resolve immediately, we could use operator overloading to minimize the surface area of the API.~~ These promises have additional features, like `.then` syntax.
+
+## Design guide
+
+- Use this types when returning a type that can include a type from the other variant:
+
+  - And
+  - This way, we preserve type information when transforming types
+  - Other situations, we can just use `never`
+
+- Remove unecessary parameters
+
+  - It's usually useless to call these when we know the variant
+  - The downside is, the toy examples in docs will be cast using as
+
+- `isOkAndAsync` and `isErrAndAsync` aren't in the API (yet), because you cannot return a `Promise<this is X>`.
