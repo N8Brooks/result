@@ -140,14 +140,14 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return res;
   }
 
-  andThen<R2 extends Result<unknown, unknown>>(fn: (ok: T) => R2): R2 {
-    return fn(this.ok);
+  andThen<R2 extends Result<unknown, unknown>>(then: (ok: T) => R2): R2 {
+    return then(this.ok);
   }
 
   andThenAsync<R2 extends Result<unknown, unknown>>(
-    fn: (ok: T) => Promise<R2>,
+    then: (ok: T) => Promise<R2>,
   ): Promise<R2> {
-    return fn(this.ok);
+    return then(this.ok);
   }
 
   or(): this {
@@ -230,8 +230,8 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return or;
   }
 
-  mapOrElse<U>(orElse: (err: E) => U): U {
-    return orElse(this.err);
+  mapOrElse<U>(_else: (err: E) => U): U {
+    return _else(this.err);
   }
 
   mapErr<F>(fn: (err: E) => F): Err<F> {
@@ -292,22 +292,22 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return res;
   }
 
-  orElse<R2 extends Result<unknown, unknown>>(fn: (err: E) => R2): R2 {
-    return fn(this.err);
+  orElse<R2 extends Result<unknown, unknown>>(_else: (err: E) => R2): R2 {
+    return _else(this.err);
   }
 
   orElseAsync<R2 extends Result<unknown, unknown>>(
-    fn: (err: E) => Promise<R2>,
+    _else: (err: E) => Promise<R2>,
   ): Promise<R2> {
-    return fn(this.err);
+    return _else(this.err);
   }
 
   unwrapOr<T>(or: T): T {
     return or;
   }
 
-  unwrapOrElse<T>(fn: (err: E) => T): T {
-    return fn(this.err);
+  unwrapOrElse<T>(_else: (err: E) => T): T {
+    return _else(this.err);
   }
 
   transpose(): Ok<E> {
@@ -344,17 +344,21 @@ interface Resultable<T, E> {
   expectErr(msg: string): E | never;
   unwrapErr(): E | never;
   and<R2 extends Result<unknown, unknown>>(res: R2): R2 | Err<E>;
-  andThen<R2 extends Result<unknown, unknown>>(fn: (ok: T) => R2): R2 | Err<E>;
+  andThen<R2 extends Result<unknown, unknown>>(
+    then: (ok: T) => R2,
+  ): R2 | Err<E>;
   andThenAsync<R2 extends Result<unknown, unknown>>(
-    fn: (ok: T) => Promise<R2>,
+    then: (ok: T) => Promise<R2>,
   ): Promise<R2 | Err<E>>;
   or<R2 extends Result<unknown, unknown>>(res: R2): Ok<T> | R2;
-  orElse<R2 extends Result<unknown, unknown>>(fn: (err: E) => R2): Ok<T> | R2;
+  orElse<R2 extends Result<unknown, unknown>>(
+    _else: (err: E) => R2,
+  ): Ok<T> | R2;
   orElseAsync<R2 extends Result<unknown, unknown>>(
-    fn: (err: E) => Promise<R2>,
+    _else: (err: E) => Promise<R2>,
   ): Promise<Ok<T> | R2>;
-  unwrapOr(or: T): T;
-  unwrapOrElse(fn: (err: E) => T): T;
+  unwrapOr(ok: T): T;
+  unwrapOrElse(_else: (err: E) => T): T;
   transpose(): Result<E, T>;
   clone(): Result<T, E>;
 }
