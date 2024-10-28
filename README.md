@@ -40,6 +40,7 @@ You can use methods that do not return a `Result` with strategies that return a 
 To help with these situations there are async sister methods for methods like `map`, such as `mapAsync`. These return a `Promise<Result>`.
 ~~It would be nice if TypeScript was a bit more leniant. Some of the implementations do not require `await`. Since using `await` on things that are not a `Promise`
 resolve immediately, we could use operator overloading to minimize the surface area of the API.~~ These promises have additional features, like `.then` syntax.
+Methods that return `U`, can be a `Promise`, so no async sister method is required.
 
 ## Design guide
 
@@ -55,3 +56,7 @@ resolve immediately, we could use operator overloading to minimize the surface a
   - The downside is, the toy examples in docs will be cast using as
 
 - `isOkAndAsync` and `isErrAndAsync` aren't in the API (yet), because you cannot return a `Promise<this is X>`.
+
+## Differing API
+
+- We can remove `expect` and use `unwrap` with an optional `msg` parameter.
