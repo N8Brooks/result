@@ -40,9 +40,9 @@ export function fromIter<T, E>(
 export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   readonly err!: never;
 
-  constructor(public readonly ok: NonOptional<T>) {}
+  constructor(public readonly ok: T) {}
 
-  static from<T>(ok: NonOptional<T>): Ok<T> {
+  static from<T>(ok: T): Ok<T> {
     return new Ok(ok);
   }
 
@@ -78,11 +78,11 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return false;
   }
 
-  map<U>(fn: (ok: T) => NonOptional<U>): Ok<U> {
+  map<U>(fn: (ok: T) => U): Ok<U> {
     return Ok.from(fn(this.ok));
   }
 
-  async mapAsync<U>(fn: (ok: T) => Promise<NonOptional<U>>): Promise<Ok<U>> {
+  async mapAsync<U>(fn: (ok: T) => Promise<U>): Promise<Ok<U>> {
     return Ok.from(await fn(this.ok));
   }
 
@@ -179,15 +179,15 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   }
 }
 
-type InnerOk<T> = Readonly<{ ok: NonOptional<T>; err?: never }>;
+type InnerOk<T> = Readonly<{ ok: T; err?: never }>;
 
 /** Contains the error value of a `Result`. */
 export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   readonly ok!: never;
 
-  constructor(public readonly err: NonOptional<E>) {}
+  constructor(public readonly err: E) {}
 
-  static from<E>(err: NonOptional<E>): Err<E> {
+  static from<E>(err: E): Err<E> {
     return new Err(err);
   }
 
@@ -234,13 +234,11 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return orElse(this.err);
   }
 
-  mapErr<F>(fn: (err: E) => NonOptional<F>): Err<F> {
+  mapErr<F>(fn: (err: E) => F): Err<F> {
     return Err.from(fn(this.err));
   }
 
-  async mapErrAsync<F>(
-    fn: (err: E) => Promise<NonOptional<F>>,
-  ): Promise<Err<F>> {
+  async mapErrAsync<F>(fn: (err: E) => Promise<F>): Promise<Err<F>> {
     return Err.from(await fn(this.err));
   }
 
@@ -321,7 +319,7 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   }
 }
 
-type InnerErr<E> = Readonly<{ ok?: never; err: NonOptional<E> }>;
+type InnerErr<E> = Readonly<{ ok?: never; err: E }>;
 
 interface Resultable<T, E> {
   [Symbol.iterator](): IterableIterator<T | never>;
@@ -331,14 +329,12 @@ interface Resultable<T, E> {
   isErr(): this is Err<E>;
   isErrAnd<F extends E>(and: (err: E) => err is F): this is Err<F>;
   isErrAnd(and: (err: E) => boolean): this is Err<E>;
-  map<U>(fn: (ok: T) => NonOptional<U>): Result<U, E>;
-  mapAsync<U>(fn: (ok: T) => Promise<NonOptional<U>>): Promise<Result<U, E>>;
+  map<U>(fn: (ok: T) => U): Result<U, E>;
+  mapAsync<U>(fn: (ok: T) => Promise<U>): Promise<Result<U, E>>;
   mapOr<U>(or: U, fn: (ok: T) => U): U;
   mapOrElse<U>(orElse: (err: E) => U, fn: (ok: T) => U): U;
-  mapErr<F>(fn: (err: E) => NonOptional<F>): Result<T, F>;
-  mapErrAsync<F>(
-    fn: (err: E) => Promise<NonOptional<F>>,
-  ): Promise<Result<T, F>>;
+  mapErr<F>(fn: (err: E) => F): Result<T, F>;
+  mapErrAsync<F>(fn: (err: E) => Promise<F>): Promise<Result<T, F>>;
   inspect(fn: (ok: T) => void): this;
   inspectAsync(fn: (ok: T) => Promise<void>): Promise<this>;
   inspectErr(fn: (err: E) => void): this;
@@ -362,5 +358,3 @@ interface Resultable<T, E> {
   transpose(): Result<E, T>;
   clone(): Result<T, E>;
 }
-
-export type NonOptional<T> = T extends undefined ? never : T;

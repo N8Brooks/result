@@ -34,16 +34,6 @@ This could be a good thing because `Err.map` is just an identity function and it
 Could we go any further? Could we hide the `Err.map` function for types we know are `Err` and only expose it through `Result`?
 For now, I'll remove the extraneous parameters. This cannot be done for things like the first argument. Adding them will be a non-breaking change.
 
-### Non Optional
-
-`NonOptional` is a type designed for anything that isn't undefined. The type errors it shows aren't very easy to understand.
-The idea was to prevent clients from creating a `Result<undefined, unknown>` or `Result<unknown, undefined>` type.
-In some ways using `undefined` for `ok` or `err` is an indiscriminate value because the TypeScript server cannot differentiate whether `{err: undefined, ok: undefined}`
-is an `InnerOk` or `InnerErr` type. In a way, it is neither which breaks the idea of a discriminated union.
-However, there's some type gymnastics that goes into adding `NonOptional` types everywhere.
-Also, it can be unnecessary because we can still tell which type it is through the polymorphic `isOk` and `isErr` methods.
-I'll leave in `NonOptional` for the time being. There are tradeoffs, but removing `NonOptional` isn't a breaking change, while the reverse is.
-
 ### Async sister methods
 
 You can use methods that do not return a `Result` with strategies that return a `Promise`. However, methods that return a `Result` can become a little hairy.
