@@ -1,5 +1,10 @@
 import { describe, it } from "@std/testing/bdd";
-import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
+import {
+  assertEquals,
+  assertStrictEquals,
+  assertThrows,
+  unreachable,
+} from "@std/assert";
 import { Err, fromIter, Ok, Result } from "./mod.ts";
 
 describe("iter", () => {
@@ -43,6 +48,28 @@ describe("isOkAnd", () => {
       assertStrictEquals(actual, expected);
     });
   });
+
+  it("type guard", () => {
+    const res: Ok<number | bigint> = Ok.from(1);
+    if (res.isOkAnd((x) => typeof x === "number")) {
+      assertStrictEquals(res.ok + 0, 1);
+    } else {
+      unreachable();
+    }
+  });
+
+  it("non-type guard", () => {
+    const res: Ok<number | bigint> = Ok.from(1);
+    if (res.isOkAnd((_x) => true)) {
+      if (typeof res.ok === "number") {
+        assertStrictEquals(res.ok + 0, 1);
+      } else {
+        unreachable();
+      }
+    } else {
+      unreachable();
+    }
+  });
 });
 
 describe("isErr", () => {
@@ -67,6 +94,28 @@ describe("isErrAnd", () => {
       const actual = result.isErrAnd((value) => value === 1);
       assertStrictEquals(actual, expected);
     });
+  });
+
+  it("type guard", () => {
+    const res: Err<number | bigint> = Err.from(1);
+    if (res.isErrAnd((x) => typeof x === "number")) {
+      assertStrictEquals(res.err + 0, 1);
+    } else {
+      unreachable();
+    }
+  });
+
+  it("non-type guard", () => {
+    const res: Err<number | bigint> = Err.from(1);
+    if (res.isErrAnd((_x) => true)) {
+      if (typeof res.err === "number") {
+        assertStrictEquals(res.err + 0, 1);
+      } else {
+        unreachable();
+      }
+    } else {
+      unreachable();
+    }
   });
 });
 

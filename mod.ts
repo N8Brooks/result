@@ -64,8 +64,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return true;
   }
 
-  isOkAnd(fn: (ok: T) => boolean): this is Ok<T> {
-    return fn(this.ok);
+  isOkAnd<U extends T>(and: (ok: T) => ok is U): this is Ok<U>;
+  isOkAnd(and: (ok: T) => boolean): this is Ok<T>;
+  isOkAnd(and: (ok: T) => boolean) {
+    return and(this.ok);
   }
 
   isErr(): this is Err<never> {
@@ -210,8 +212,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return true;
   }
 
-  isErrAnd(fn: (err: E) => boolean): this is Err<E> {
-    return fn(this.err);
+  isErrAnd<F extends E>(and: (err: E) => err is F): this is Err<F>;
+  isErrAnd(and: (err: E) => boolean): this is Err<E>;
+  isErrAnd(and: (err: E) => boolean) {
+    return and(this.err);
   }
 
   map(): this {
@@ -322,9 +326,11 @@ type InnerErr<E> = Readonly<{ ok?: never; err: NonOptional<E> }>;
 interface Resultable<T, E> {
   [Symbol.iterator](): IterableIterator<T | never>;
   isOk(): this is Ok<T>;
-  isOkAnd(fn: (ok: T) => boolean): this is Ok<T>;
+  isOkAnd<U extends T>(and: (ok: T) => ok is U): this is Ok<U>;
+  isOkAnd(and: (ok: T) => boolean): this is Ok<T>;
   isErr(): this is Err<E>;
-  isErrAnd(fn: (err: E) => boolean): this is Err<E>;
+  isErrAnd<F extends E>(and: (err: E) => err is F): this is Err<F>;
+  isErrAnd(and: (err: E) => boolean): this is Err<E>;
   map<U>(fn: (ok: T) => NonOptional<U>): Result<U, E>;
   mapAsync<U>(fn: (ok: T) => Promise<NonOptional<U>>): Promise<Result<U, E>>;
   mapOr<U>(or: U, fn: (ok: T) => U): U;
