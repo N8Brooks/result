@@ -128,6 +128,14 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return this.ok;
   }
 
+  unwrapOr(): T {
+    return this.ok;
+  }
+
+  unwrapOrElse(): T {
+    return this.ok;
+  }
+
   expectErr(msg: string): never {
     throw new Error(`${msg}: expectErr called on an Ok value`);
   }
@@ -160,14 +168,6 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
 
   orElseAsync(): Promise<this> {
     return Promise.resolve(this);
-  }
-
-  unwrapOr(): T {
-    return this.ok;
-  }
-
-  unwrapOrElse(): T {
-    return this.ok;
   }
 
   transpose(): Err<T> {
@@ -268,6 +268,14 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     throw new Error("unwrap called on an Err value");
   }
 
+  unwrapOr<T>(or: T): T {
+    return or;
+  }
+
+  unwrapOrElse<T>(_else: (err: E) => T): T {
+    return _else(this.err);
+  }
+
   expectErr(): E {
     return this.err;
   }
@@ -299,14 +307,6 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   orElseAsync<R2 extends Result<unknown, unknown>>(
     _else: (err: E) => Promise<R2>,
   ): Promise<R2> {
-    return _else(this.err);
-  }
-
-  unwrapOr<T>(or: T): T {
-    return or;
-  }
-
-  unwrapOrElse<T>(_else: (err: E) => T): T {
     return _else(this.err);
   }
 
@@ -747,6 +747,50 @@ interface Resultable<T, E> extends Iterable<T> {
   unwrap(): T | never;
 
   /**
+   * @returns the contained `ok` or a provided default.
+   * @param `or`, the default value to return if this is an `Err`.
+   *
+   * @remarks Arguments passed to `unwrapOr` are eagerly evaluated; if you are passing the result of a function call, it is recommended to use {@link unwrapOrElse}, which is lazily evaluated.
+   *
+   * @see {@link unwrapOrElse} for the lazily evaluated version of this method.
+   * @see {@link unwrap} for retrieving the `ok` value or throwing an error.
+   *
+   * @example
+   * ```ts
+   * import * as Result from "./mod.ts";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const x = Result.Ok.from(2) as Result.Result<number, string>;
+   * assertEquals(x.unwrapOr(0), 2);
+   *
+   * const y = Result.Err.from("error");
+   * assertEquals(y.unwrapOr(0), 0);
+   * ```
+   */
+  unwrapOr(ok: T): T;
+
+  /**
+   * @returns the contained `ok` or computes it from a closure.
+   * @param `_else`, the function to call to compute the default value if this is an `Err`.
+   *
+   * @remarks This method can be used with asynchronous functions.
+   *
+   * @see {@link unwrapOr} for the eagerly evaluated version of this method.
+   *
+   * @example
+   * ```ts
+   * import * as Result from "./mod.ts";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const count = (err: string) => err.length;
+   *
+   * assertEquals((Result.Ok.from(2) as Result.Result<number, string>).unwrapOrElse(count), 2);
+   * assertEquals(Result.Err.from("error").unwrapOrElse(count), 5);
+   * ```
+   */
+  unwrapOrElse(_else: (err: E) => T): T;
+
+  /**
    * @params `msg`, the error message to display if this is an `Ok`.
    * @returns the `err` value.
    * @throws an `Error` with the provided message if this is an `Ok`.
@@ -982,52 +1026,6 @@ interface Resultable<T, E> extends Iterable<T> {
   orElseAsync<R2 extends Result<unknown, unknown>>(
     _else: (err: E) => Promise<R2>,
   ): Promise<Ok<T> | R2>;
-
-  // TODO: move `unwrap` and unwrapOrElse` by the other unwrap methods
-
-  /**
-   * @returns the contained `ok` or a provided default.
-   * @param `or`, the default value to return if this is an `Err`.
-   *
-   * @remarks Arguments passed to `unwrapOr` are eagerly evaluated; if you are passing the result of a function call, it is recommended to use {@link unwrapOrElse}, which is lazily evaluated.
-   *
-   * @see {@link unwrapOrElse} for the lazily evaluated version of this method.
-   * @see {@link unwrap} for retrieving the `ok` value or throwing an error.
-   *
-   * @example
-   * ```ts
-   * import * as Result from "./mod.ts";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const x = Result.Ok.from(2) as Result.Result<number, string>;
-   * assertEquals(x.unwrapOr(0), 2);
-   *
-   * const y = Result.Err.from("error");
-   * assertEquals(y.unwrapOr(0), 0);
-   * ```
-   */
-  unwrapOr(ok: T): T;
-
-  /**
-   * @returns the contained `ok` or computes it from a closure.
-   * @param `_else`, the function to call to compute the default value if this is an `Err`.
-   *
-   * @remarks This method can be used with asynchronous functions.
-   *
-   * @see {@link unwrapOr} for the eagerly evaluated version of this method.
-   *
-   * @example
-   * ```ts
-   * import * as Result from "./mod.ts";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const count = (err: string) => err.length;
-   *
-   * assertEquals((Result.Ok.from(2) as Result.Result<number, string>).unwrapOrElse(count), 2);
-   * assertEquals(Result.Err.from("error").unwrapOrElse(count), 5);
-   * ```
-   */
-  unwrapOrElse(_else: (err: E) => T): T;
 
   // TODO: fix transpose
   transpose(): Result<E, T>;
