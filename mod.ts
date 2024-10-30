@@ -74,6 +74,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return and(this.ok);
   }
 
+  isOkAndAsync(and: (ok: T) => Promise<boolean>): Promise<boolean> {
+    return and(this.ok);
+  }
+
   isErr(): this is Err<never> {
     return false;
   }
@@ -224,6 +228,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return and(this.err);
   }
 
+  isOkAndAsync(): Promise<boolean> {
+    return Promise.resolve(false);
+  }
+
   map(): this {
     return this;
   }
@@ -354,6 +362,7 @@ interface Resultable<T, E> extends Iterable<T> {
 
   /**
    * @returns `true` if the `Result` is `Ok` and the `ok` value satisfies the predicate.
+   * TODO: param
    *
    * @remarks This provides a  type guard for a specific `Ok` variant.
    *
@@ -376,6 +385,7 @@ interface Resultable<T, E> extends Iterable<T> {
 
   /**
    * @returns `true` if the `Result` is `Ok` and the `ok` value satisfies the predicate.
+   * TODO: param
    *
    * @see {@link isOk} for a more general version of this method.
    * @see {@link isErrAnd} for the complementary `Err` method.
@@ -395,7 +405,30 @@ interface Resultable<T, E> extends Iterable<T> {
    */
   isOkAnd(and: (ok: T) => boolean): this is Ok<T>;
 
-  // TODO: isOkAndAsync, alpha
+  /**
+   * @returns `Promise<true>` if the `Result` is `Ok` and the `ok` value satisfies the predicate.
+   * @param `and`, the async predicate to apply to the `ok` value.
+   *
+   * @remarks This does not provide a type guard.
+   *
+   * @see {@link isOk} for a more general version of this method with a type guard.
+   * @see {@link isOkAnd} for a type guard version of this method.
+   * @see {@link isErrAnAsync} for the complementary `Err` method.
+   *
+   * @example
+   * ```
+   * import * as Result from "./mod.ts";
+   * import { assertEquals } from "@std/assert";}
+   *
+   * const x = Result.Ok.from(2);
+   * assertEquals(await x.isOkAndAsync((ok) => Promise.resolve(ok > 1)), true);
+   * assertEquals(await x.isOkAndAsync((ok) => Promise.resolve(ok > 5)), false);
+   *
+   * const y: Result.Result<number, string> = Result.Err.from("error");
+   * assertEquals(await y.isOkAndAsync((ok) => Promise.resolve(ok > 1)), false);
+   * ```
+   */
+  isOkAndAsync(and: (ok: T) => Promise<boolean>): Promise<boolean>;
 
   /**
    * @returns `true` if the `Result` is `Err`.
