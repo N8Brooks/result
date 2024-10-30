@@ -135,6 +135,22 @@ describe("isErrAnd", () => {
   });
 });
 
+describe("isErrAndAsync", () => {
+  [
+    { name: "ok and 1 equals 1", result: Ok.from(1), expected: false },
+    { name: "ok and 2 equals 1", result: Ok.from(2), expected: false },
+    { name: "err and 1 equals 1", result: Err.from(1), expected: true },
+    { name: "err and 2 equals 1", result: Err.from(2), expected: false },
+  ].forEach(({ name, result, expected }) => {
+    it(name, async () => {
+      const actual = await result.isErrAndAsync((value) =>
+        Promise.resolve(value === 1)
+      );
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("map", () => {
   [
     { name: "ok", result: Ok.from(1), expected: Ok.from(2) },

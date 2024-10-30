@@ -86,6 +86,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return false;
   }
 
+  isErrAndAsync(): Promise<boolean> {
+    return Promise.resolve(false);
+  }
+
   map<U>(fn: (ok: T) => U): Ok<U> {
     return Ok.from(fn(this.ok));
   }
@@ -218,6 +222,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return false;
   }
 
+  isOkAndAsync(): Promise<boolean> {
+    return Promise.resolve(false);
+  }
+
   isErr(): this is Err<E> {
     return true;
   }
@@ -228,8 +236,8 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return and(this.err);
   }
 
-  isOkAndAsync(): Promise<boolean> {
-    return Promise.resolve(false);
+  isErrAndAsync(and: (err: E) => Promise<boolean>): Promise<boolean> {
+    return and(this.err);
   }
 
   map(): this {
@@ -495,7 +503,30 @@ interface Resultable<T, E> extends Iterable<T> {
    */
   isErrAnd(and: (err: E) => boolean): this is Err<E>;
 
-  // TODO: `isErrAndAsync`, alpha
+  /**
+   * @returns `Promise<true>` if the `Result` is `Err` and the `err` value satisfies the predicate.
+   * @param `and`, the async predicate to apply to the `err` value.
+   *
+   * @remarks This does not provide a type guard.
+   *
+   * @see {@link isErr} for a more general version of this method with a type guard.
+   * @see {@link isErrAnd} for a type guard version of this method.
+   * @see {@link isOkAndAsync} for the complementary `Ok` method.
+   *
+   * @example
+   * ```
+   * import * as Result from "./mod.ts";
+   * import { assertEquals } from "@std/assert";}
+   *
+   * const x = Result.Err.from("error");
+   * assertEquals(await x.isErrAndAsync((err) => Promise.resolve(err === "error")), true);
+   * assertEquals(await x.isErrAndAsync((err) => Promise.resolve(err === "error 2")), false);
+   *
+   * const y: Result.Result<number, string> = Result.Ok.from(1);
+   * assertEquals(await y.isErrAndAsync((err) => Promise.resolve(err === "error")), false);
+   * ```
+   */
+  isErrAndAsync(and: (err: E) => Promise<boolean>): Promise<boolean>;
 
   /**
    * Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained `Ok<U>` value, leaving an `Err<E>` value untouched.
