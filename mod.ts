@@ -1,6 +1,5 @@
 export type Result<T, E> = Ok<T> | Err<E>;
 
-// TODO: remove unecessary casts from doc comments
 // TODO: doc comments for types and classes
 // TODO: move type param below returns
 
@@ -597,7 +596,9 @@ interface Resultable<T, E> extends Iterable<T> {
    * @typeParam `U`, the type of the return value.
    * @returns the provided default, `or`, (if `Err`), or applies a function to the contained value (if `Ok`).
    *
-   * @remarks The `or` parameter is eagerly evaluated; if you are passing the result of a function call, it is recommended to use {@link mapOrElse} instead.
+   * @remarks
+   * - The `or` parameter is eagerly evaluated; if you are passing the result of a function call, it is recommended to use {@link mapOrElse} instead.
+   * - This method can be used with asynchronous functions.
    *
    * @see {@link map} for the returning a `Result` instead of a value.
    * @see {@link mapOrElse} for providing a function to apply to the `err` value.
