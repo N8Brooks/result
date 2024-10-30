@@ -1,5 +1,9 @@
 export type Result<T, E> = Ok<T> | Err<E>;
 
+// TODO: remove unecessary casts from doc comments
+// TODO: doc comments for types and classes
+// TODO: move type param below returns
+
 /** Takes each element in the `Iterable`: if it is an `Err`, no further elements are taken, and the `Err` is returned.
  * Should no `Err` occur, an `Array` with the `ok` of each `Result` is returned.
  *
@@ -170,8 +174,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
     return Promise.resolve(this);
   }
 
-  transpose(): Err<T> {
-    return Err.from(this.ok);
+  transpose(): undefined | Ok<NonNullable<T>> {
+    return this.ok === undefined || this.ok === null
+      ? undefined
+      : Ok.from(this.ok);
   }
 
   clone(): Ok<T> {
@@ -310,8 +316,8 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
     return _else(this.err);
   }
 
-  transpose(): Ok<E> {
-    return Ok.from(this.err);
+  transpose(): this {
+    return this;
   }
 
   clone(): Err<E> {
@@ -1027,8 +1033,32 @@ interface Resultable<T, E> extends Iterable<T> {
     _else: (err: E) => Promise<R2>,
   ): Promise<Ok<T> | R2>;
 
-  // TODO: fix transpose
-  transpose(): Result<E, T>;
+  /**
+   * Transposes a `Result` of an `Option` into an `Option` of a `Result`.
+   *
+   * @example
+   * ```ts
+   * import * as Result from "./mod.ts";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const x = Result.Ok.from(3);
+   * assertEquals(x.transpose(), Result.Ok.from(3));
+   *
+   * const y: Result.Ok<number | undefined> = Result.Ok.from(undefined);
+   * assertEquals(y.transpose(), undefined);
+   *
+   * const z: Result.Result<number, string> = Result.Err.from("error");
+   * assertEquals(z.transpose(), Result.Err.from("error"));
+   * ```
+   *
+   * @privateRemarks
+   *  - The input type could be required to be nullish
+   *  - Alternatively, the result type could only be optional if the `ok` is nullish
+   *  - The `NonNullable` could be more strict with just `| undefined` or less strict by checking for `falsy` values
+   */
+  transpose(): Result<NonNullable<T>, E> | undefined;
+
+  // TODO: flatten, experimental
 
   /**
    * @returns a shallow clone of the `Result`.
@@ -1049,6 +1079,4 @@ interface Resultable<T, E> extends Iterable<T> {
    * Or, we could move this to a `Clone` trait with a method `Symbol`.
    */
   clone(): Result<T, E>;
-
-  // TODO: flatten, experimental
 }

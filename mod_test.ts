@@ -445,8 +445,10 @@ describe("unwrapOrElse", () => {
 
 describe("transpose", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: Err.from(1) },
-    { name: "err", result: Err.from(1), expected: Ok.from(1) },
+    { name: "ok number", result: Ok.from(1), expected: Ok.from(1) },
+    { name: "ok undefined", result: Ok.from(undefined), expected: undefined },
+    { name: "ok null", result: Ok.from(null), expected: undefined },
+    { name: "err", result: Err.from("error"), expected: Err.from("error") },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.transpose();
@@ -467,6 +469,7 @@ describe("clone", () => {
   });
 });
 
+// TODO: move to top
 describe("fromIter", () => {
   [
     { name: "ok empty", results: [], expected: Ok.from([]) },
