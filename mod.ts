@@ -1005,7 +1005,7 @@ interface Resultable<T, E> extends Iterable<T> {
    *
    * const a1 = Result.Ok.from(2);
    * const b1 = Result.Err.from("late error");
-   * assertEquals(a1.and(b1), Result.Err.from("error"));
+   * assertEquals(a1.and(b1), Result.Err.from("late error"));
    *
    * const a2 = Result.Err.from("early error") as Result.Result<string, string>;
    * const b2 = Result.Ok.from("foo");
