@@ -442,7 +442,7 @@ interface Resultable<T, E> extends Iterable<T> {
 
   /**
    * @returns `true` if the `Result` is `Ok` and the `ok` value satisfies the predicate.
-   * TODO: param
+   * @param `and`, the predicate to apply to the `ok` value.
    *
    * @remarks This provides a  type guard for a specific `Ok` variant.
    *
@@ -465,7 +465,7 @@ interface Resultable<T, E> extends Iterable<T> {
 
   /**
    * @returns `true` if the `Result` is `Ok` and the `ok` value satisfies the predicate.
-   * TODO: param
+   * @param `and`, the predicate to apply to the `ok` value.
    *
    * @see {@link isOk} for a more general version of this method.
    * @see {@link isErrAnd} for the complementary `Err` method.
@@ -534,6 +534,7 @@ interface Resultable<T, E> extends Iterable<T> {
 
   /**
    * @returns `true` if the `Result` is `Err` and the `err` value satisfies the predicate.
+   * @param `and`, the predicate to apply to the `err` value.
    *
    * @remarks This provides a type guard for a specific `Err` variant.
    *
@@ -556,6 +557,7 @@ interface Resultable<T, E> extends Iterable<T> {
 
   /**
    * @returns `true` if the `Result` is `Err` and the `err` value satisfies the predicate.
+   * @param `and`, the predicate to apply to the `err` value.
    *
    * @see {@link isErr} for a more general version of this method.
    * @see {@link isOkAnd} for the complementary `Ok` method.
@@ -603,8 +605,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a contained `Ok<U>` value, leaving an `Err<E>` value untouched.
    *
-   * @param `fn`, the function to apply to the `ok` value.
    * @returns a new `Result<U, E>` value.
+   * @param `fn`, the function to apply to the `ok` value.
    *
    * @typeParam `U`, the type of the new `ok` value.
    *
@@ -631,8 +633,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Maps a `Result<T, E>` to `Result<U, E>` by applying an asynchronous function to a contained `Ok<U>` value, leaving an `Err<E>` value untouched.
    *
-   * @param `fn`, the asynchronous function to apply to the `ok` value.
    * @returns a `Promise` with the new `Result<U, E>` value.
+   * @param `fn`, the asynchronous function to apply to the `ok` value.
    *
    * @typeParam `U`, the type of the new `ok` value.
    *
@@ -658,9 +660,9 @@ interface Resultable<T, E> extends Iterable<T> {
   mapAsync<U>(fn: (ok: T) => Promise<U>): Promise<Result<U, E>>;
 
   /**
+   * @returns the provided default, `or`, (if `Err`), or applies a function to the contained value (if `Ok`).
    * @param `or`, the default value to return if the `Result` is `Err`.
    * @param `fn`, the function to apply to the `ok` value.
-   * @returns the provided default, `or`, (if `Err`), or applies a function to the contained value (if `Ok`).
    *
    * @typeParam `U`, the type of the return value.
    *
@@ -688,9 +690,9 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Maps a `Result<T, E>` to `U` by applying the fallback function `_else` to a contained `err`, or a function `fn` to a contained `ok`.
    *
+   * @returns the result of applying the appropriate function to the contained value.
    * @param `_else`, the function to apply to the `err` value.
    * @param `fn`, the function to apply to the `ok` value.
-   * @returns the result of applying the appropriate function to the contained value.
    *
    * @typeParam `U`, the type of the return value.
    *
@@ -718,8 +720,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a contained `Err<F>` value, leaving an `Ok<T>` value untouched.
    *
-   * @param `fn`, the function to apply to the `err` value.
    * @returns a new `Result<T, F>` value.
+   * @param `fn`, the function to apply to the `err` value.
    *
    * @typeParam `F`, the type of the new `err` value.
    *
@@ -745,8 +747,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Mpas a `Result<T, E>` to `Result<T, F>` by applying an asynchronous function to a contained `Err<F>` value, leaving an `Ok<T>` value untouched.
    *
-   * @param `fn`, the asynchronous function to apply to the `err` value.
    * @returns a `Promise` with the new `Result<T, F>` value.
+   * @param `fn`, the asynchronous function to apply to the `err` value.
    *
    * @typeParam `F`, the type of the new `err` value.
    *
@@ -774,8 +776,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Calls a function with a parameter to the contained `ok` value.
    *
-   * @param `fn`, the function to call with the `ok` value.
    * @returns the original `Result` value.
+   * @param `fn`, the function to call with the `ok` value.
    *
    * @see {@link inspectAsync} for the asynchronous version of this method.
    * @see {@link inspectErr} for calling a function with the `err` value.
@@ -794,8 +796,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Calls an asynchronous function with a parameter to the contained `ok` value.
    *
-   * @param `fn`, the asynchronous function to call with the `ok` value.
    * @returns a `Promise` with the original `Result` value.
+   * @param `fn`, the asynchronous function to call with the `ok` value.
    *
    * @see {@link inspect} for the synchronous version of this method.
    * @see {@link inspectErrAsync} for calling an asynchronous function with the `err` value.
@@ -814,8 +816,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Calls a function with a parameter to the contained `err` value.
    *
-   * @param `fn`, the function to call with the `err` value.
    * @returns the original `Result` value.
+   * @param `fn`, the function to call with the `err` value.
    *
    * @see {@link inspectAsync} for the asynchronous version of this method.
    * @see {@link inspect} for calling a function with the `ok` value.
@@ -834,8 +836,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Calls an asynchronous function with a parameter to the contained `err` value.
    *
-   * @param `fn`, the asynchronous function to call with the `err` value.
    * @returns a `Promise` with the original `Result` value.
+   * @param `fn`, the asynchronous function to call with the `err` value.
    *
    * @see {@link inspectErr} for the synchronous version of this method.
    * @see {@link inspectAsync} for calling an asynchronous function with the `ok` value.
@@ -852,8 +854,8 @@ interface Resultable<T, E> extends Iterable<T> {
   inspectErrAsync(fn: (err: E) => Promise<void>): Promise<this>;
 
   /**
-   * @params `msg`, the error message to display if this is an `Err`.
    * @returns the `ok` value.
+   * @params `msg`, the error message to display if this is an `Err`.
    * @throws an error with the provided message if this is an `Err`.
    *
    * @see {@link unwrap} for retrieving `ok` without providing an error message.
@@ -941,8 +943,8 @@ interface Resultable<T, E> extends Iterable<T> {
   unwrapOrElse(_else: (err: E) => T): T;
 
   /**
-   * @params `msg`, the error message to display if this is an `Ok`.
    * @returns the `err` value.
+   * @params `msg`, the error message to display if this is an `Ok`.
    * @throws an `Error` with the provided message if this is an `Ok`.
    *
    * @see {@link unwrapErr} for retrieving `err` without providing an error message.
@@ -986,8 +988,8 @@ interface Resultable<T, E> extends Iterable<T> {
   unwrapErr(): E | never;
 
   /**
-   * @param `res`, the `Result` to return if this is `Ok`.
    * @returns `res` if the result is `Ok`, otherwise returns the `Err` value of `this`.
+   * @param `res`, the `Result` to return if this is `Ok`.
    *
    * @typeParam `R2`, the type of the `Result` to return if this is `Ok`.
    *
@@ -1022,8 +1024,8 @@ interface Resultable<T, E> extends Iterable<T> {
   and<R2 extends Result<unknown, unknown>>(res: R2): R2 | Err<E>;
 
   /**
-   * @param `then`, the function to call with the `ok` value if this is `Ok`.
    * @returns the result of calling `then` if this is `Ok`, otherwise returns the `Err` value of `this`.
+   * @param `then`, the function to call with the `ok` value if this is `Ok`.
    *
    * @typeParam `R2`, the type of the `Result` to return if this is `Ok`.
    *
@@ -1119,8 +1121,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Calls op if the result is `Err`, otherwise returns the `Ok` value of `this`.
    *
-   * @param `_else`, the function to call with the `err` value.
    * @returns the result of applying the appropriate function to the contained value.
+   * @param `_else`, the function to call with the `err` value.
    *
    * @typeParam `R2`, the type of the `Result` to return if this is `Err`.
    *
@@ -1154,8 +1156,8 @@ interface Resultable<T, E> extends Iterable<T> {
   /**
    * Calls an asynchronous function with a parameter to the contained `err` value.
    *
-   * @param `_else`, the asynchronous function to call with the `err` value.
    * @returns the result of applying the appropriate function to the contained value.
+   * @param `_else`, the asynchronous function to call with the `err` value.
    *
    * @typeParam `R2`, the type of the `Result` to return if this is `Err`.
    *
@@ -1185,6 +1187,8 @@ interface Resultable<T, E> extends Iterable<T> {
 
   /**
    * Transposes a `Result` of an `Option` into an `Option` of a `Result`.
+   *
+   * @returns a new `Result<T, E> | undefined` value where `T` is defined and non-null
    *
    * @example
    * ```ts
