@@ -1,12 +1,19 @@
+/** `Result` is a type that represents either success (`Ok`) or failure (`Err`). */
 export type Result<T, E> = Ok<T> | Err<E>;
 
-// TODO: doc comments for types and classes
 // TODO: move type param below returns
 
-/** Takes each element in the `Iterable`: if it is an `Err`, no further elements are taken, and the `Err` is returned.
+/**
+ * Takes each element in the `Iterable`: if it is an `Err`, no further elements are taken, and the `Err` is returned.
  * Should no `Err` occur, an `Array` with the `ok` of each `Result` is returned.
  *
- * Here is an example:
+ * @param `results` the `Iterable` of `Result`s to collect.
+ * @returns an `Ok` with an `Array` of the `ok` values if no `Err` occurs, otherwise the first `Err` is returned.
+ *
+ * @typeParam `T`, the type of the `ok` values.
+ * @typeParam `E`, the type of the `err` values.
+ *
+ * @example
  * ```ts
  * import { Ok, fromIter } from "./mod.ts";
  * import { assertEquals } from "@std/assert";
@@ -16,6 +23,7 @@ export type Result<T, E> = Ok<T> | Err<E>;
  * assertEquals(result, Ok.from([1, 2]));
  * ```
  *
+ * @example
  * Here is another example that shows that the first `Err` is returned:
  * ```ts
  * import { Ok, Err, fromIter } from "./mod.ts";
@@ -25,6 +33,8 @@ export type Result<T, E> = Ok<T> | Err<E>;
  * const result = fromIter(results);
  * assertEquals(result, Err.from("error"));
  * ```
+ *
+ * @privateRemarks Perhaps less flexible typing than methods with extends typing like `and` and `or`
  */
 export function fromIter<T, E>(
   results: Iterable<Result<T, E>>,
@@ -45,6 +55,26 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
 
   constructor(public readonly ok: T) {}
 
+  /**
+   * Creates a new `Ok` value.
+   * @param ok the value to wrap in an `Ok`.
+   * @returns a new `Ok<T>` value.
+   *
+   * @typeParam `T`, the type of the value.
+   *
+   * @remarks This is a convenience method to avoid the `new` keyword.
+   *
+   * @see {@link Err.from} for the `Err` variant.
+   *
+   * @example
+   * ```ts
+   * import * as Result from "./mod.ts";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const x = Result.Ok.from(2);
+   * assertEquals(x, new Result.Ok(2));
+   * ```
+   */
   static from<T>(ok: T): Ok<T> {
     return new Ok(ok);
   }
@@ -196,7 +226,15 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
   }
 }
 
-type InnerOk<T> = Readonly<{ ok: T; err?: never }>;
+type InnerOk<T> = Readonly<{
+  /**
+   * Access `T | undefined` from `Result<T, E>`.
+   *
+   * @remarks doesn't work well will optional `T` types.
+   */
+  ok: T;
+  err?: never;
+}>;
 
 /** Contains the error value of a `Result`. */
 export class Err<E> implements InnerErr<E>, Resultable<never, E> {
@@ -204,6 +242,26 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
 
   constructor(public readonly err: E) {}
 
+  /**
+   * Creates a new `Err` value.
+   *
+   * @param err the value to wrap in an `Err`.
+   * @returns a new `Err<E>` value.
+   *
+   * @typeParam `E`, the type of the value.
+   * @remarks This is a convenience method to avoid the `new` keyword.
+   *
+   * @see {@link Ok.from} for the `Ok` variant.
+   *
+   * @example
+   * ```ts
+   * import * as Result from "./mod.ts";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const x = Result.Err.from("error");
+   * assertEquals(x, new Result.Err("error"));
+   * ```
+   */
   static from<E>(err: E): Err<E> {
     return new Err(err);
   }
@@ -348,7 +406,15 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   }
 }
 
-type InnerErr<E> = Readonly<{ ok?: never; err: E }>;
+type InnerErr<E> = Readonly<{
+  ok?: never;
+  /**
+   * Access `E | undefined` from `Result<T, E>`.
+   *
+   * @remarks doesn't work well will optional `E` types.
+   */
+  err: E;
+}>;
 
 interface Resultable<T, E> extends Iterable<T> {
   [Symbol.iterator](): IterableIterator<T | never>;
