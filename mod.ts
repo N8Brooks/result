@@ -1155,9 +1155,7 @@ interface Resultable<T, E> extends Iterable<T> {
    *
    * @experimental Rust's `flatten` method is nightly-only
    */
-  flatten<U, F>(
-    this: Result<Result<U, F>, E>,
-  ): Result<U, E | F>;
+  flatten<U, F>(this: Result<Result<U, F>, E>): Result<U, E | F>;
 
   /**
    * @returns a shallow clone of the `Result`.
