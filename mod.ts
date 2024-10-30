@@ -188,6 +188,10 @@ export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
       : Ok.from(this.ok);
   }
 
+  flatten<U, F>(this: Result<Result<U, F>, unknown>): Result<U, F> {
+    return this.ok;
+  }
+
   clone(): Ok<T> {
     return Ok.from(this.ok);
   }
@@ -333,6 +337,10 @@ export class Err<E> implements InnerErr<E>, Resultable<never, E> {
   }
 
   transpose(): this {
+    return this;
+  }
+
+  flatten(): this {
     return this;
   }
 
@@ -1122,7 +1130,34 @@ interface Resultable<T, E> extends Iterable<T> {
    */
   transpose(): Result<NonNullable<T>, E> | undefined;
 
-  // TODO: flatten, experimental
+  /**
+   * Converts from `Result<Result<U, F>, E>` to `Result<U, E | F>`
+   *
+   * @returns a new `Result<T, E>` value.
+   * @typeParam `U`, the type of the inner `ok` value.
+   * @typeParam `F`, the type of the inner `err` value.
+   *
+   * ```ts
+   * import * as Result from "./mod.ts";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const x = Result.Ok.from(Result.Ok.from(2));
+   * assertEquals(x.flatten(), Result.Ok.from(2));
+   *
+   * const y = Result.Ok.from(Result.Err.from("error"));
+   * assertEquals(y.flatten(), Result.Err.from("error"));
+   *
+   * const z= Result.Err.from("error");
+   * assertEquals(z.flatten(), Result.Err.from("error"));
+   * ```
+   *
+   * @privateRemarks This is method's return type allows combining different `err` types.
+   *
+   * @experimental Rust's `flatten` method is nightly-only
+   */
+  flatten<U, F>(
+    this: Result<Result<U, F>, E>,
+  ): Result<U, E | F>;
 
   /**
    * @returns a shallow clone of the `Result`.

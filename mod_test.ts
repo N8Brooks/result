@@ -451,6 +451,7 @@ describe("orElseAsync", () => {
   });
 });
 
+// TODO: move by unwrap group
 describe("unwrapOr", () => {
   [
     { name: "ok", result: Ok.from(1), expected: 1 },
@@ -487,6 +488,29 @@ describe("transpose", () => {
       assertEquals(actual, expected);
     });
   });
+});
+
+describe("flatten", () => {
+  [
+    { name: "ok ok", result: Ok.from(Ok.from(1)), expected: Ok.from(1) },
+    {
+      name: "ok err",
+      result: Ok.from(Err.from("error")),
+      expected: Err.from("error"),
+    },
+    {
+      name: "err",
+      result: Err.from("error"),
+      expected: Err.from("error"),
+    },
+  ].forEach(
+    ({ name, result, expected }) => {
+      it(name, () => {
+        const actual = result.flatten();
+        assertEquals(actual, expected);
+      });
+    },
+  );
 });
 
 describe("clone", () => {
