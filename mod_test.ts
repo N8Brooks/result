@@ -7,6 +7,28 @@ import {
 } from "@std/assert";
 import { Err, fromIter, Ok, Result } from "./mod.ts";
 
+describe("fromIter", () => {
+  [
+    { name: "ok empty", results: [], expected: Ok.from([]) },
+    {
+      name: "ok",
+      results: [Ok.from(1), Ok.from(2)],
+      expected: Ok.from([1, 2]),
+    },
+    { name: "err", results: [Ok.from(1), Err.from(2)], expected: Err.from(2) },
+    {
+      name: "first err",
+      results: [Err.from(1), Ok.from(2)],
+      expected: Err.from(1),
+    },
+  ].forEach(({ name, results, expected }) => {
+    it(name, () => {
+      const actual = fromIter(results);
+      assertEquals(actual, expected);
+    });
+  });
+});
+
 describe("iter", () => {
   [
     { name: "ok", result: Ok.from(1), expected: [1] },
@@ -333,6 +355,30 @@ describe("unwrap", () => {
   });
 });
 
+describe("unwrapOr", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 1 },
+    { name: "err", result: Err.from(1), expected: 2 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.unwrapOr(2);
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
+describe("unwrapOrElse", () => {
+  [
+    { name: "ok", result: Ok.from(1), expected: 1 },
+    { name: "err", result: Err.from(1), expected: 2 },
+  ].forEach(({ name, result, expected }) => {
+    it(name, () => {
+      const actual = result.unwrapOrElse((err) => err + 1);
+      assertStrictEquals(actual, expected);
+    });
+  });
+});
+
 describe("expectErr", () => {
   it("ok", () => {
     const ok = Ok.from(1);
@@ -451,31 +497,6 @@ describe("orElseAsync", () => {
   });
 });
 
-// TODO: move by unwrap group
-describe("unwrapOr", () => {
-  [
-    { name: "ok", result: Ok.from(1), expected: 1 },
-    { name: "err", result: Err.from(1), expected: 2 },
-  ].forEach(({ name, result, expected }) => {
-    it(name, () => {
-      const actual = result.unwrapOr(2);
-      assertStrictEquals(actual, expected);
-    });
-  });
-});
-
-describe("unwrapOrElse", () => {
-  [
-    { name: "ok", result: Ok.from(1), expected: 1 },
-    { name: "err", result: Err.from(1), expected: 2 },
-  ].forEach(({ name, result, expected }) => {
-    it(name, () => {
-      const actual = result.unwrapOrElse((err) => err + 1);
-      assertStrictEquals(actual, expected);
-    });
-  });
-});
-
 describe("transpose", () => {
   [
     { name: "ok number", result: Ok.from(1), expected: Ok.from(1) },
@@ -520,29 +541,6 @@ describe("clone", () => {
   ].forEach(({ name, expected }) => {
     it(name, () => {
       const actual = expected.clone();
-      assertEquals(actual, expected);
-    });
-  });
-});
-
-// TODO: move to top
-describe("fromIter", () => {
-  [
-    { name: "ok empty", results: [], expected: Ok.from([]) },
-    {
-      name: "ok",
-      results: [Ok.from(1), Ok.from(2)],
-      expected: Ok.from([1, 2]),
-    },
-    { name: "err", results: [Ok.from(1), Err.from(2)], expected: Err.from(2) },
-    {
-      name: "first err",
-      results: [Err.from(1), Ok.from(2)],
-      expected: Err.from(1),
-    },
-  ].forEach(({ name, results, expected }) => {
-    it(name, () => {
-      const actual = fromIter(results);
       assertEquals(actual, expected);
     });
   });
