@@ -231,7 +231,7 @@ export namespace Result {
    *
    * @sealed Not meant to be implemented or extended by users.
    */
-  export interface InnerOk<T> {
+  interface InnerOk<T> {
     /**
      * Access `T | undefined` from `Result<T, E>`.
      *
@@ -424,7 +424,7 @@ export namespace Result {
    *
    * @sealed Not meant to be implemented or extended by users.
    */
-  export interface InnerErr<E> {
+  interface InnerErr<E> {
     /**
      * Access `T | undefined` from `Result<T, E>`.
      *
@@ -447,7 +447,7 @@ export namespace Result {
    *
    * @sealed Not meant to be implemented or extended by users.
    */
-  export interface Resultable<T, E> extends Iterable<T> {
+  interface Resultable<T, E> extends Iterable<T> {
     [Symbol.iterator](): IterableIterator<T | never>;
 
     /**
