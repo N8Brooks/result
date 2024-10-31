@@ -1,78 +1,143 @@
 # Result
 
-## Design
+This module provides the Result type, a versatile utility to handle success
+(`Ok`) and error (`Err`) outcomes in TypeScript. The Result type enables safe
+and expressive error handling in your code, especially useful for operations
+that might fail, without throwing exceptions.
 
-### Initial vision
+## Installation
 
-A rust Result port for TypeScript. In some ways, TypeScript has a more powerful
-type system than Rust. For instance, we can use `result.ok` which checks `ok`
-for truthy values, and validates `result` is an `Ok`.
+Install the Result module using npm:
 
-However, we cannot write 1:1 Rust in TypeScript. There will be limitations where
-the idiomatic Rust way conflicts with the idiomatic TypeScript way.
+```bash
+npm install <module-name>
+```
 
-- In TypeScript we have `Result` as a type so that it can implement an interface
-  across `Ok` and `Err` and have a discriminated union for `ok` and `err`. Types
-  in TypeScript cannot have static methods for the creation of `Ok` and `Err`
-  types. So Rust's `Result::Ok()` cannot be written as `Result.Ok()` unless
-  there is some `.d.ts` magic I'm not aware of. So, we'll stick to `new Ok()`
-  and `Ok.from` which is a more TypeScript idiomatic way to do so. The downside
-  is Referencing `Ok` and `Err` directly results in a larger and clunkier API
-  for clients. As a remediation, I'd suggest importing the result library as
-  `import * as Result from "result";`.
+Install the `Result` module using deno:
 
-## Design considerations
+```bash
+deno add jsr:<module-name>
+```
 
-### Re-name to res
+## Usage
 
-I'm tempted to re-name `Result` to `Res`. This would make all the objects map to
-their 'short' names. This would be a consistent naming convention, but would
-stray from the initial vision of a rust Result port.
+### Basic Types
 
-- Result -> Res
-- Okay -> Ok
-- Error -> Err
+The `Result<T, E>` type can represent:
 
-### Minimize unnecessary api details
+- `Ok`: Success, containing a value of type T.
+- `Err`: Failure, containing an error of type E.
 
-We could remove parameters in `Ok` and `Err` that are not relevant. This would
-mean `Result`s that we know are `Err` could not call `Err.map` with parameters.
-This could be a good thing because `Err.map` is just an identity function and it
-shows clients it's kind of useless if we know it is an `Err`. Could we go any
-further? Could we hide the `Err.map` function for types we know are `Err` and
-only expose it through `Result`? For now, I'll remove the extraneous parameters.
-This cannot be done for things like the first argument. Adding them will be a
-non-breaking change.
+```ts
+import { Result } from "./mod.ts";
+import { assertEquals } from "@std/assert";
 
-### Async sister methods
+const success = Result.ok(42);
+assertEquals(success.ok, 42);
 
-You can use methods that do not return a `Result` with strategies that return a
-`Promise`. However, methods that return a `Result` can become a little hairy. To
-help with these situations there are async sister methods for methods like
-`map`, such as `mapAsync`. These return a `Promise<Result>`. ~~It would be nice
-if TypeScript was a bit more leniant. Some of the implementations do not require
-`await`. Since using `await` on things that are not a `Promise` resolve
-immediately, we could use operator overloading to minimize the surface area of
-the API.~~ These promises have additional features, like `.then` syntax. Methods
-that return `U`, can be a `Promise`, so no async sister method is required.
+const failure = Result.err("error");
+assertEquals(failure.err, "error");
+```
 
-## Design guide
+### Checking status with `isOk` and `isErr`
 
-- Use this types when returning a type that can include a type from the other
-  variant:
+These methods provide a type guard for the variant.
 
-  - And
-  - This way, we preserve type information when transforming types
-  - Other situations, we can just use `never`
+- `isOk()`: Returns true if the result is `Ok`.
+- `isErr()`: Returns true if the result is `Err`.
 
-- Remove unecessary parameters
+```ts
+import { Result } from "./mod.ts";
+import { assert } from "@std/assert";
 
-  - It's usually useless to call these when we know the variant
-  - The downside is, the toy examples in docs will be cast using as
+const success = Result.ok(42);
+assert(success.isOk());
 
-- `isOkAndAsync` and `isErrAndAsync` aren't in the API (yet), because you cannot
-  return a `Promise<this is X>`.
+const failure = Result.err("error");
+assert(failure.isErr());
+```
 
-## Differing API
+### Mapping functions
 
-- We can remove `expect` and use `unwrap` with an optional `msg` parameter.
+- `map`: Apply a function to the value in `Ok`, leaving `Err` unchanged.
+- `mapErr`: Apply a function to the value in `Err`, leaving `Ok` unchanged.
+
+```ts
+import { Result } from "./mod.ts";
+import { assertEquals } from "@std/assert";
+
+const success = Result.ok(2);
+const mapped = success.map((x) => x * 2);
+assertEquals(mapped, Result.ok(4));
+
+const failure = Result.err("error");
+const mappedErr = failure.mapErr((e) => `${e}!`);
+assertEquals(mappedErr, Result.err("error!"));
+```
+
+### Unwrapping
+
+- `unwrap`: Retrieve the `Ok` value or throw an error if `Err`.
+- `unwrapOr`: Retrieve the `Ok` value or return a default value.
+- `expect`: Retrieve the `Ok` value or throw a custom error if `Err`.
+
+```ts
+import { Result } from "./mod.ts";
+import { assertEquals } from "@std/assert";
+
+const value = Result.ok(10).unwrap();
+assertEquals(value, 10);
+
+const defaultValue = Result.err("error").unwrapOr(0);
+assertEquals(defaultValue, 0);
+
+const result = Result.ok(10) as Result<number, string>);
+const expectation = result.expect(  "Expected value");
+assertEquals(expectation, 10);
+```
+
+### Async utilities
+
+Result also supports asynchronous mapping and inspection:
+
+- `mapAsync`: Apply an async function to the `Ok` value.
+- `inspectAsync`: Run an async function on the `Ok` or `Err` value.
+
+```ts
+import { Result } from "./mod.ts";
+import { assertEquals } from "@std/assert";
+
+const asyncResult = await Result.ok(2).mapAsync(async (x) => x * 2);
+assertEquals(asyncResult, Result.ok(4));
+
+const asyncResult2 = await Result
+  .err("error")
+  .inspectErrAsync(async (e) => console.error(e));
+assertEquals(asyncResult2, Result.err("error"));
+```
+
+### Collecting results with `fromIter`
+
+This function takes an `iterable` of Results. If all elements are `Ok`, it
+returns an `Ok` containing an array of values; if any `Err` is encountered, it
+returns the first `Err`.
+
+```ts
+import { Result } from "./mod.ts";
+import { assertEquals } from "@std/assert";
+
+const results = [Result.ok(1), Result.ok(2)];
+assertEquals(Result.fromIter(results), Result.ok([1, 2]));
+
+const mixed = [Result.ok(1), Result.err("error")];
+assertEquals(Result.fromIter(mixed), Result.err("error"));
+```
+
+## Api reference
+
+For a full list of methods and examples, refer to the documentation in the code
+comments from "./mod.ts".
+
+## License
+
+TBD
