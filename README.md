@@ -5,23 +5,39 @@ This module provides the Result type, a versatile utility to handle success
 and expressive error handling in your code, especially useful for operations
 that might fail, without throwing exceptions.
 
+The package is inspired by Rust's
+[Result](https://doc.rust-lang.org/stable/std/result/) `Enum`, and it provides
+similar methods.
+
 ## Installation
 
 Install the Result module using npm:
 
 ```bash
-npm install <module-name>
+npx jsr add @skookumchoocher/result
+```
+
+And import it in your code:
+
+```ts
+import { Result } from "@skookumchoocher/result";
 ```
 
 Install the `Result` module using deno:
 
 ```bash
-deno add jsr:<module-name>
+deno add jsr:@skookumchoocher/result
+```
+
+And import it in your code:
+
+```ts
+import { Result } from "@skookumchoocher/result";
 ```
 
 ## Usage
 
-### Basic Types
+### Basic types
 
 The `Result<T, E>` type can represent:
 
@@ -136,8 +152,8 @@ assertEquals(Result.fromIter(mixed), Result.err("error"));
 ## Api reference
 
 For a full list of methods and examples, refer to the documentation in the code
-comments from "./mod.ts".
+comments from [mod.ts](./mod.ts).
 
 ## License
 
-TBD
+[MIT](./LICENSE), similar to Rust's Result type.
