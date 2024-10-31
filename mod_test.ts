@@ -5,25 +5,29 @@ import {
   assertThrows,
   unreachable,
 } from "@std/assert";
-import { Err, fromIter, Ok, Result } from "./mod.ts";
+import { Result } from "./mod.ts";
 
 describe("fromIter", () => {
   [
-    { name: "ok empty", results: [], expected: Ok.from([]) },
+    { name: "ok empty", results: [], expected: Result.ok([]) },
     {
       name: "ok",
-      results: [Ok.from(1), Ok.from(2)],
-      expected: Ok.from([1, 2]),
+      results: [Result.ok(1), Result.ok(2)],
+      expected: Result.ok([1, 2]),
     },
-    { name: "err", results: [Ok.from(1), Err.from(2)], expected: Err.from(2) },
+    {
+      name: "err",
+      results: [Result.ok(1), Result.err(2)],
+      expected: Result.err(2),
+    },
     {
       name: "first err",
-      results: [Err.from(1), Ok.from(2)],
-      expected: Err.from(1),
+      results: [Result.err(1), Result.ok(2)],
+      expected: Result.err(1),
     },
   ].forEach(({ name, results, expected }) => {
     it(name, () => {
-      const actual = fromIter(results);
+      const actual = Result.fromIter(results);
       assertEquals(actual, expected);
     });
   });
@@ -31,8 +35,8 @@ describe("fromIter", () => {
 
 describe("iter", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: [1] },
-    { name: "err", result: Err.from(1), expected: [] },
+    { name: "ok", result: Result.ok(1), expected: [1] },
+    { name: "err", result: Result.err(1), expected: [] },
   ].forEach(({ name, result, expected }) => {
     it(`${name} iterator`, () => {
       const actual = [...result];
@@ -49,8 +53,8 @@ describe("iter", () => {
 
 describe("isOk", () => {
   [
-    { name: "ok", result: Ok.from(1), isOk: true },
-    { name: "err", result: Err.from(1), isOk: false },
+    { name: "ok", result: Result.ok(1), isOk: true },
+    { name: "err", result: Result.err(1), isOk: false },
   ].forEach(({ name, result, isOk }) => {
     it(name, () => {
       assertStrictEquals(result.isOk(), isOk);
@@ -60,10 +64,10 @@ describe("isOk", () => {
 
 describe("isOkAnd", () => {
   [
-    { name: "ok and 1 equals 1", result: Ok.from(1), expected: true },
-    { name: "ok and 2 equals 1", result: Ok.from(2), expected: false },
-    { name: "err and 1 equals 1", result: Err.from(1), expected: false },
-    { name: "err and 2 equals 1", result: Err.from(2), expected: false },
+    { name: "ok and 1 equals 1", result: Result.ok(1), expected: true },
+    { name: "ok and 2 equals 1", result: Result.ok(2), expected: false },
+    { name: "err and 1 equals 1", result: Result.err(1), expected: false },
+    { name: "err and 2 equals 1", result: Result.err(2), expected: false },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.isOkAnd((value) => value === 1);
@@ -72,7 +76,7 @@ describe("isOkAnd", () => {
   });
 
   it("type guard", () => {
-    const res: Ok<number | bigint> = Ok.from(1);
+    const res: Result.Ok<number | bigint> = Result.ok(1);
     if (res.isOkAnd((x) => typeof x === "number")) {
       assertStrictEquals(res.ok + 0, 1);
     } else {
@@ -81,7 +85,7 @@ describe("isOkAnd", () => {
   });
 
   it("non-type guard", () => {
-    const res: Ok<number | bigint> = Ok.from(1);
+    const res: Result.Ok<number | bigint> = Result.ok(1);
     if (res.isOkAnd((_x) => true)) {
       if (typeof res.ok === "number") {
         assertStrictEquals(res.ok + 0, 1);
@@ -96,10 +100,10 @@ describe("isOkAnd", () => {
 
 describe("isOkAndAsync", () => {
   [
-    { name: "ok and 1 equals 1", result: Ok.from(1), expected: true },
-    { name: "ok and 2 equals 1", result: Ok.from(2), expected: false },
-    { name: "err and 1 equals 1", result: Err.from(1), expected: false },
-    { name: "err and 2 equals 1", result: Err.from(2), expected: false },
+    { name: "ok and 1 equals 1", result: Result.ok(1), expected: true },
+    { name: "ok and 2 equals 1", result: Result.ok(2), expected: false },
+    { name: "err and 1 equals 1", result: Result.err(1), expected: false },
+    { name: "err and 2 equals 1", result: Result.err(2), expected: false },
   ].forEach(({ name, result, expected }) => {
     it(name, async () => {
       const actual = await result.isOkAndAsync((value) =>
@@ -112,8 +116,8 @@ describe("isOkAndAsync", () => {
 
 describe("isErr", () => {
   [
-    { name: "ok", result: Ok.from(1), isErr: false },
-    { name: "err", result: Err.from(1), isErr: true },
+    { name: "ok", result: Result.ok(1), isErr: false },
+    { name: "err", result: Result.err(1), isErr: true },
   ].forEach(({ name, result, isErr }) => {
     it(name, () => {
       assertStrictEquals(result.isErr(), isErr);
@@ -123,10 +127,10 @@ describe("isErr", () => {
 
 describe("isErrAnd", () => {
   [
-    { name: "ok and 1 equals 1", result: Ok.from(1), expected: false },
-    { name: "ok and 2 equals 1", result: Ok.from(2), expected: false },
-    { name: "err and 1 equals 1", result: Err.from(1), expected: true },
-    { name: "err and 2 equals 1", result: Err.from(2), expected: false },
+    { name: "ok and 1 equals 1", result: Result.ok(1), expected: false },
+    { name: "ok and 2 equals 1", result: Result.ok(2), expected: false },
+    { name: "err and 1 equals 1", result: Result.err(1), expected: true },
+    { name: "err and 2 equals 1", result: Result.err(2), expected: false },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.isErrAnd((value) => value === 1);
@@ -135,7 +139,7 @@ describe("isErrAnd", () => {
   });
 
   it("type guard", () => {
-    const res: Err<number | bigint> = Err.from(1);
+    const res: Result.Err<number | bigint> = Result.err(1);
     if (res.isErrAnd((x) => typeof x === "number")) {
       assertStrictEquals(res.err + 0, 1);
     } else {
@@ -144,7 +148,7 @@ describe("isErrAnd", () => {
   });
 
   it("non-type guard", () => {
-    const res: Err<number | bigint> = Err.from(1);
+    const res: Result.Err<number | bigint> = Result.err(1);
     if (res.isErrAnd((_x) => true)) {
       if (typeof res.err === "number") {
         assertStrictEquals(res.err + 0, 1);
@@ -159,10 +163,10 @@ describe("isErrAnd", () => {
 
 describe("isErrAndAsync", () => {
   [
-    { name: "ok and 1 equals 1", result: Ok.from(1), expected: false },
-    { name: "ok and 2 equals 1", result: Ok.from(2), expected: false },
-    { name: "err and 1 equals 1", result: Err.from(1), expected: true },
-    { name: "err and 2 equals 1", result: Err.from(2), expected: false },
+    { name: "ok and 1 equals 1", result: Result.ok(1), expected: false },
+    { name: "ok and 2 equals 1", result: Result.ok(2), expected: false },
+    { name: "err and 1 equals 1", result: Result.err(1), expected: true },
+    { name: "err and 2 equals 1", result: Result.err(2), expected: false },
   ].forEach(({ name, result, expected }) => {
     it(name, async () => {
       const actual = await result.isErrAndAsync((value) =>
@@ -175,8 +179,8 @@ describe("isErrAndAsync", () => {
 
 describe("map", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: Ok.from(2) },
-    { name: "err", result: Err.from(1), expected: Err.from(1) },
+    { name: "ok", result: Result.ok(1), expected: Result.ok(2) },
+    { name: "err", result: Result.err(1), expected: Result.err(1) },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.map((value) => value + 1);
@@ -187,8 +191,8 @@ describe("map", () => {
 
 describe("mapAsync", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: Ok.from(2) },
-    { name: "err", result: Err.from(1), expected: Err.from(1) },
+    { name: "ok", result: Result.ok(1), expected: Result.ok(2) },
+    { name: "err", result: Result.err(1), expected: Result.err(1) },
   ].forEach(({ name, result, expected }) => {
     it(name, async () => {
       const actual = await result.mapAsync((value) =>
@@ -201,8 +205,8 @@ describe("mapAsync", () => {
 
 describe("mapOr", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 2 },
-    { name: "err", result: Err.from(1), expected: 3 },
+    { name: "ok", result: Result.ok(1), expected: 2 },
+    { name: "err", result: Result.err(1), expected: 3 },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.mapOr(3, (value) => value + 1);
@@ -213,8 +217,8 @@ describe("mapOr", () => {
 
 describe("mapOrElse", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 2 },
-    { name: "err", result: Err.from(1), expected: 3 },
+    { name: "ok", result: Result.ok(1), expected: 2 },
+    { name: "err", result: Result.err(1), expected: 3 },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.mapOrElse(() => 3, () => 2);
@@ -225,8 +229,8 @@ describe("mapOrElse", () => {
 
 describe("mapOrElseAsync", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 2 },
-    { name: "err", result: Err.from(1), expected: 3 },
+    { name: "ok", result: Result.ok(1), expected: 2 },
+    { name: "err", result: Result.err(1), expected: 3 },
   ].forEach(({ name, result, expected }) => {
     it(name, async () => {
       const actual = await result.mapOrElse(
@@ -240,8 +244,8 @@ describe("mapOrElseAsync", () => {
 
 describe("mapErr", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: Ok.from(1) },
-    { name: "err", result: Err.from(1), expected: Err.from(2) },
+    { name: "ok", result: Result.ok(1), expected: Result.ok(1) },
+    { name: "err", result: Result.err(1), expected: Result.err(2) },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.mapErr(() => 2);
@@ -252,8 +256,8 @@ describe("mapErr", () => {
 
 describe("mapErrAsync", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: Ok.from(1) },
-    { name: "err", result: Err.from(1), expected: Err.from(2) },
+    { name: "ok", result: Result.ok(1), expected: Result.ok(1) },
+    { name: "err", result: Result.err(1), expected: Result.err(2) },
   ].forEach(({ name, result, expected }) => {
     it(name, async () => {
       const actual = await result.mapErrAsync(() => Promise.resolve(2));
@@ -264,8 +268,8 @@ describe("mapErrAsync", () => {
 
 describe("inspect", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 1 },
-    { name: "err", result: Err.from(1), expected: 0 },
+    { name: "ok", result: Result.ok(1), expected: 1 },
+    { name: "err", result: Result.err(1), expected: 0 },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       let actual = 0;
@@ -279,8 +283,8 @@ describe("inspect", () => {
 
 describe("inpsectAsync", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 1 },
-    { name: "err", result: Err.from(1), expected: 0 },
+    { name: "ok", result: Result.ok(1), expected: 1 },
+    { name: "err", result: Result.err(1), expected: 0 },
   ].forEach(({ name, result, expected }) => {
     it(name, async () => {
       let actual = 0;
@@ -295,8 +299,8 @@ describe("inpsectAsync", () => {
 
 describe("inspectErr", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 0 },
-    { name: "err", result: Err.from(1), expected: 1 },
+    { name: "ok", result: Result.ok(1), expected: 0 },
+    { name: "err", result: Result.err(1), expected: 1 },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       let actual = 0;
@@ -310,8 +314,8 @@ describe("inspectErr", () => {
 
 describe("inspectErrAsync", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 0 },
-    { name: "err", result: Err.from(1), expected: 1 },
+    { name: "ok", result: Result.ok(1), expected: 0 },
+    { name: "err", result: Result.err(1), expected: 1 },
   ].forEach(({ name, result, expected }) => {
     it(name, async () => {
       let actual = 0;
@@ -326,12 +330,12 @@ describe("inspectErrAsync", () => {
 
 describe("expect", () => {
   it("ok", () => {
-    const ok = Ok.from(1) as Result<number, never>;
+    const ok = Result.ok(1) as Result<number, never>;
     assertStrictEquals(ok.expect("message"), 1);
   });
 
   it("err", () => {
-    const err = Err.from(1);
+    const err = Result.err(1);
     const message = "message";
     const error = assertThrows(() => err.expect(message));
     const actual = error instanceof Error ? error.message : undefined;
@@ -342,12 +346,12 @@ describe("expect", () => {
 
 describe("unwrap", () => {
   it("ok", () => {
-    const ok = Ok.from(1);
+    const ok = Result.ok(1);
     assertStrictEquals(ok.unwrap(), 1);
   });
 
   it("err", () => {
-    const err = Err.from(1);
+    const err = Result.err(1);
     const error = assertThrows(() => err.unwrap());
     const actual = error instanceof Error ? error.message : undefined;
     const expected = "unwrap called on an Err value";
@@ -357,8 +361,8 @@ describe("unwrap", () => {
 
 describe("unwrapOr", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 1 },
-    { name: "err", result: Err.from(1), expected: 2 },
+    { name: "ok", result: Result.ok(1), expected: 1 },
+    { name: "err", result: Result.err(1), expected: 2 },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.unwrapOr(2);
@@ -369,8 +373,8 @@ describe("unwrapOr", () => {
 
 describe("unwrapOrElse", () => {
   [
-    { name: "ok", result: Ok.from(1), expected: 1 },
-    { name: "err", result: Err.from(1), expected: 2 },
+    { name: "ok", result: Result.ok(1), expected: 1 },
+    { name: "err", result: Result.err(1), expected: 2 },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.unwrapOrElse((err) => err + 1);
@@ -381,7 +385,7 @@ describe("unwrapOrElse", () => {
 
 describe("expectErr", () => {
   it("ok", () => {
-    const ok = Ok.from(1);
+    const ok = Result.ok(1);
     const message = "message";
     const error = assertThrows(() => ok.expectErr(message));
     const actual = error instanceof Error ? error.message : undefined;
@@ -390,29 +394,29 @@ describe("expectErr", () => {
   });
 
   it("err", () => {
-    const err = Err.from(1) as Result<never, number>;
+    const err = Result.err(1) as Result<never, number>;
     assertStrictEquals(err.expectErr("message"), 1);
   });
 });
 
 describe("unwrapErr", () => {
   it("ok", () => {
-    const ok = Ok.from(1);
+    const ok = Result.ok(1);
     assertThrows(() => ok.unwrapErr());
   });
 
   it("err", () => {
-    const err = Err.from(1);
+    const err = Result.err(1);
     assertStrictEquals(err.unwrapErr(), 1);
   });
 });
 
 describe("and", () => {
   [
-    { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "b" },
-    { name: "ok err", a: Ok.from(1), b: Err.from("b"), key: "b" },
-    { name: "err ok", a: Err.from("a"), b: Ok.from(2), key: "a" },
-    { name: "err err", a: Err.from("a"), b: Err.from("b"), key: "a" },
+    { name: "ok ok", a: Result.ok(1), b: Result.ok(2), key: "b" },
+    { name: "ok err", a: Result.ok(1), b: Result.err("b"), key: "b" },
+    { name: "err ok", a: Result.err("a"), b: Result.ok(2), key: "a" },
+    { name: "err err", a: Result.err("a"), b: Result.err("b"), key: "a" },
   ].forEach(({ name, a, b, key }) => {
     it(name, () => {
       const actual = a.and(b);
@@ -424,10 +428,10 @@ describe("and", () => {
 
 describe("andThen", () => {
   [
-    { name: "ok ok", a: Ok.from(1), b: Ok.from("b"), key: "b" },
-    { name: "ok err", a: Ok.from(1), b: Err.from(2), key: "b" },
-    { name: "err ok", a: Err.from(1), b: Ok.from("b"), key: "a" },
-    { name: "err err", a: Err.from(1), b: Err.from(2), key: "a" },
+    { name: "ok ok", a: Result.ok(1), b: Result.ok("b"), key: "b" },
+    { name: "ok err", a: Result.ok(1), b: Result.err(2), key: "b" },
+    { name: "err ok", a: Result.err(1), b: Result.ok("b"), key: "a" },
+    { name: "err err", a: Result.err(1), b: Result.err(2), key: "a" },
   ].forEach(({ name, a, b, key }) => {
     it(name, () => {
       const actual = a.andThen((_a) => b);
@@ -439,10 +443,10 @@ describe("andThen", () => {
 
 describe("andThenAsync", () => {
   [
-    { name: "ok ok", a: Ok.from(1), b: Ok.from("b"), key: "b" },
-    { name: "ok err", a: Ok.from(1), b: Err.from(2), key: "b" },
-    { name: "err ok", a: Err.from(1), b: Ok.from("b"), key: "a" },
-    { name: "err err", a: Err.from(1), b: Err.from(2), key: "a" },
+    { name: "ok ok", a: Result.ok(1), b: Result.ok("b"), key: "b" },
+    { name: "ok err", a: Result.ok(1), b: Result.err(2), key: "b" },
+    { name: "err ok", a: Result.err(1), b: Result.ok("b"), key: "a" },
+    { name: "err err", a: Result.err(1), b: Result.err(2), key: "a" },
   ].forEach(({ name, a, b, key }) => {
     it(name, async () => {
       const actual = await a.andThenAsync((_a) => Promise.resolve(b));
@@ -454,10 +458,10 @@ describe("andThenAsync", () => {
 
 describe("or", () => {
   [
-    { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "a" },
-    { name: "ok err", a: Ok.from(1), b: Err.from("b"), key: "a" },
-    { name: "err ok", a: Err.from("a"), b: Ok.from(2), key: "b" },
-    { name: "err err", a: Err.from("a"), b: Err.from("b"), key: "b" },
+    { name: "ok ok", a: Result.ok(1), b: Result.ok(2), key: "a" },
+    { name: "ok err", a: Result.ok(1), b: Result.err("b"), key: "a" },
+    { name: "err ok", a: Result.err("a"), b: Result.ok(2), key: "b" },
+    { name: "err err", a: Result.err("a"), b: Result.err("b"), key: "b" },
   ].forEach(({ name, a, b, key }) => {
     it(name, () => {
       const actual = a.or(b);
@@ -469,10 +473,10 @@ describe("or", () => {
 
 describe("orElse", () => {
   [
-    { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "a" },
-    { name: "ok err", a: Ok.from(1), b: Err.from("b"), key: "a" },
-    { name: "err ok", a: Err.from(1), b: Ok.from(2), key: "b" },
-    { name: "err err", a: Err.from(1), b: Err.from("b"), key: "b" },
+    { name: "ok ok", a: Result.ok(1), b: Result.ok(2), key: "a" },
+    { name: "ok err", a: Result.ok(1), b: Result.err("b"), key: "a" },
+    { name: "err ok", a: Result.err(1), b: Result.ok(2), key: "b" },
+    { name: "err err", a: Result.err(1), b: Result.err("b"), key: "b" },
   ].forEach(({ name, a, b, key }) => {
     it(name, () => {
       const actual = a.orElse((_a) => b);
@@ -484,10 +488,10 @@ describe("orElse", () => {
 
 describe("orElseAsync", () => {
   [
-    { name: "ok ok", a: Ok.from(1), b: Ok.from(2), key: "a" },
-    { name: "ok err", a: Ok.from(1), b: Err.from("b"), key: "a" },
-    { name: "err ok", a: Err.from(1), b: Ok.from(2), key: "b" },
-    { name: "err err", a: Err.from(1), b: Err.from("b"), key: "b" },
+    { name: "ok ok", a: Result.ok(1), b: Result.ok(2), key: "a" },
+    { name: "ok err", a: Result.ok(1), b: Result.err("b"), key: "a" },
+    { name: "err ok", a: Result.err(1), b: Result.ok(2), key: "b" },
+    { name: "err err", a: Result.err(1), b: Result.err("b"), key: "b" },
   ].forEach(({ name, a, b, key }) => {
     it(name, async () => {
       const actual = await a.orElseAsync((_a) => Promise.resolve(b));
@@ -499,10 +503,10 @@ describe("orElseAsync", () => {
 
 describe("transpose", () => {
   [
-    { name: "ok number", result: Ok.from(1), expected: Ok.from(1) },
-    { name: "ok undefined", result: Ok.from(undefined), expected: undefined },
-    { name: "ok null", result: Ok.from(null), expected: undefined },
-    { name: "err", result: Err.from("error"), expected: Err.from("error") },
+    { name: "ok number", result: Result.ok(1), expected: Result.ok(1) },
+    { name: "ok undefined", result: Result.ok(undefined), expected: undefined },
+    { name: "ok null", result: Result.ok(null), expected: undefined },
+    { name: "err", result: Result.err("error"), expected: Result.err("error") },
   ].forEach(({ name, result, expected }) => {
     it(name, () => {
       const actual = result.transpose();
@@ -513,16 +517,16 @@ describe("transpose", () => {
 
 describe("flatten", () => {
   [
-    { name: "ok ok", result: Ok.from(Ok.from(1)), expected: Ok.from(1) },
+    { name: "ok ok", result: Result.ok(Result.ok(1)), expected: Result.ok(1) },
     {
       name: "ok err",
-      result: Ok.from(Err.from("error")),
-      expected: Err.from("error"),
+      result: Result.ok(Result.err("error")),
+      expected: Result.err("error"),
     },
     {
       name: "err",
-      result: Err.from("error"),
-      expected: Err.from("error"),
+      result: Result.err("error"),
+      expected: Result.err("error"),
     },
   ].forEach(
     ({ name, result, expected }) => {
@@ -536,8 +540,8 @@ describe("flatten", () => {
 
 describe("clone", () => {
   [
-    { name: "ok", expected: Ok.from(1) },
-    { name: "err", expected: Err.from(1) },
+    { name: "ok", expected: Result.ok(1) },
+    { name: "err", expected: Result.err(1) },
   ].forEach(({ name, expected }) => {
     it(name, () => {
       const actual = expected.clone();
