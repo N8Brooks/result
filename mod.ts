@@ -1,6 +1,4 @@
-/** `Result` is a type that represents either success (`Ok`) or failure (`Err`). */
-export type Result<T, E> = Result.Ok<T> | Result.Err<E>;
-
+/** A namespace to simulate `static` methods for the `Result` type. */
 // deno-lint-ignore no-namespace
 export namespace Result {
   /**
@@ -226,14 +224,25 @@ export namespace Result {
       return new Ok(this.ok);
     }
   }
-
-  interface InnerOk<T> {
+  /**
+   * Implemented by `Ok` values which contains the `ok` value.
+   *
+   * @typeParam `T`, the type of the `ok` value.
+   *
+   * @sealed Not meant to be implemented or extended by users.
+   */
+  export interface InnerOk<T> {
     /**
      * Access `T | undefined` from `Result<T, E>`.
      *
      * @remarks doesn't work well will optional `T` types.
      */
     readonly ok: T;
+    /**
+     * Access `E | undefined` from `Result<T, E>`.
+     *
+     * @remarks doesn't work well will optional `E` types.
+     */
     readonly err?: never;
   }
 
@@ -408,7 +417,19 @@ export namespace Result {
     }
   }
 
-  interface InnerErr<E> {
+  /**
+   * Implemented by `Err` values which contain the `err` value.
+   *
+   * @typeParam `E`, the type of the `err` value.
+   *
+   * @sealed Not meant to be implemented or extended by users.
+   */
+  export interface InnerErr<E> {
+    /**
+     * Access `T | undefined` from `Result<T, E>`.
+     *
+     * @remarks doesn't work well will optional `T` types.
+     */
     readonly ok?: never;
     /**
      * Access `E | undefined` from `Result<T, E>`.
@@ -418,7 +439,15 @@ export namespace Result {
     readonly err: E;
   }
 
-  interface Resultable<T, E> extends Iterable<T> {
+  /**
+   * The common `interface` for `Ok` and `Err` values.
+   *
+   * @typeParam `T`, the type of the `ok` value.
+   * @typeParam `E`, the type of the `err` value.
+   *
+   * @sealed Not meant to be implemented or extended by users.
+   */
+  export interface Resultable<T, E> extends Iterable<T> {
     [Symbol.iterator](): IterableIterator<T | never>;
 
     /**
@@ -1266,3 +1295,6 @@ export namespace Result {
     clone(): Result<T, E>;
   }
 }
+
+/** `Result` is a type that represents either success (`Ok`) or failure (`Err`). */
+export type Result<T, E> = Result.Ok<T> | Result.Err<E>;
