@@ -1088,7 +1088,8 @@ export namespace Result {
      * @returns `res` if the result is `Err`, otherwise returns `this`.
      * @param `res`, the `Result` to return if this is `Err`.
      *
-     * @typeParam `R2`, the type of the `Result` to return if this is `Err`.
+     * @typeParam `U`, the `ok` type of the `Result`.
+     * @typeParam `F`, the `err` type of the `Result`.
      *
      * @remarks Arguments passed to `or` are eagerly evaluated; if you are passing the result of a function call, it is recommended to use {@link orElse}, which is lazily evaluated.
      *
@@ -1119,7 +1120,7 @@ export namespace Result {
      *
      * @privateRemarks This method and its sister methods has a return type that allows combining different `ok` types.
      */
-    or<R2 extends Result<unknown, unknown>>(res: R2): Ok<T> | R2;
+    or<U, F>(res: Result<U, F>): Result<T | U, F>;
 
     /**
      * Calls op if the result is `Err`, otherwise returns the `Ok` value of `this`.
@@ -1127,7 +1128,8 @@ export namespace Result {
      * @returns the result of applying the appropriate function to the contained value.
      * @param `_else`, the function to call with the `err` value.
      *
-     * @typeParam `R2`, the type of the `Result` to return if this is `Err`.
+     * @typeParam `U`, the type of `ok` returned from the function.
+     * @typeParam `F`, the type of `err` returned from the function.
      *
      * @remarks This function can be used for control flow based on `Result` values.
      *
@@ -1152,9 +1154,7 @@ export namespace Result {
      * assertEquals(err3.orElse(err).orElse(err), Result.err(3));
      * ```
      */
-    orElse<R2 extends Result<unknown, unknown>>(
-      _else: (err: E) => R2,
-    ): Ok<T> | R2;
+    orElse<U, F>(_else: (err: E) => Result<U, F>): Result<T | U, F>;
 
     /**
      * Calls an asynchronous function with a parameter to the contained `err` value.
@@ -1162,7 +1162,8 @@ export namespace Result {
      * @returns the result of applying the appropriate function to the contained value.
      * @param `_else`, the asynchronous function to call with the `err` value.
      *
-     * @typeParam `R2`, the type of the `Result` to return if this is `Err`.
+     * @typeParam `U`, the type of `ok` returned from the function.
+     * @typeParam `F`, the type of the `err` value returned from the function.
      *
      * @remarks This method can be used for control flow based on `Result` values.
      *
@@ -1184,9 +1185,9 @@ export namespace Result {
      * assertEquals(await y.orElseAsync(sq), Result.ok(9));
      * ```
      */
-    orElseAsync<R2 extends Result<unknown, unknown>>(
-      _else: (err: E) => Promise<R2>,
-    ): Promise<Ok<T> | R2>;
+    orElseAsync<U, F>(
+      _else: (err: E) => Promise<Result<U, F>>,
+    ): Promise<Result<U | T, F>>;
 
     /**
      * Transposes a `Result` of an `Option` into an `Option` of a `Result`.
