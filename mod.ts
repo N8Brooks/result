@@ -227,15 +227,15 @@ export namespace Result {
     }
   }
 
-  type InnerOk<T> = Readonly<{
+  interface InnerOk<T> {
     /**
      * Access `T | undefined` from `Result<T, E>`.
      *
      * @remarks doesn't work well will optional `T` types.
      */
-    ok: T;
-    err?: never;
-  }>;
+    readonly ok: T;
+    readonly err?: never;
+  }
 
   /**
    * Creates a new `Err` value.
@@ -408,15 +408,15 @@ export namespace Result {
     }
   }
 
-  type InnerErr<E> = Readonly<{
-    ok?: never;
+  interface InnerErr<E> {
+    readonly ok?: never;
     /**
      * Access `E | undefined` from `Result<T, E>`.
      *
      * @remarks doesn't work well will optional `E` types.
      */
-    err: E;
-  }>;
+    readonly err: E;
+  }
 
   interface Resultable<T, E> extends Iterable<T> {
     [Symbol.iterator](): IterableIterator<T | never>;
