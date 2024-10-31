@@ -994,7 +994,8 @@ export namespace Result {
      * @returns `res` if the result is `Ok`, otherwise returns the `Err` value of `this`.
      * @param `res`, the `Result` to return if this is `Ok`.
      *
-     * @typeParam `R2`, the type of the `Result` to return if this is `Ok`.
+     * @typeParam `U`, the `ok` type of the `Result`.
+     * @typeParam `F`, the `err` type of the `Result`.
      *
      * @remarks Arguments passed to `and` are eagerly evaluated; if you are passing the result of a function call, it is recommended to use {@link andThen}, which is lazily evaluated.
      *
@@ -1024,13 +1025,14 @@ export namespace Result {
      *
      * @privateRemarks This method and its sister methods has a return type that allows combining different `err` types.
      */
-    and<R2 extends Result<unknown, unknown>>(res: R2): R2 | Err<E>;
+    and<U, F>(res: Result<U, F>): Result<U, E | F>;
 
     /**
      * @returns the result of calling `then` if this is `Ok`, otherwise returns the `Err` value of `this`.
      * @param `then`, the function to call with the `ok` value if this is `Ok`.
      *
-     * @typeParam `R2`, the type of the `Result` to return if this is `Ok`.
+     * @typeParam `U`, the `ok` type from the function.
+     * @typeParam `F`, the `err` type from the function.
      *
      * @remarks This method can be used for control flow based on `Result` values.
      *
@@ -1050,15 +1052,14 @@ export namespace Result {
      * assertEquals((Result.err("error") as Result<number, string>).andThen(sq_to_string), Result.err("error"));
      * ```
      */
-    andThen<R2 extends Result<unknown, unknown>>(
-      then: (ok: T) => R2,
-    ): R2 | Err<E>;
+    andThen<U, F>(then: (ok: T) => Result<U, F>): Result<U, E | F>;
 
     /**
      * @returns the asynchronous result of calling `then` if this is `Ok`, otherwise returns the `Err` value of `this`.
      * @param `then`, the asynchronous function to call with the `ok` value if this is `Ok`.
      *
-     * @typeParam `R2`, the type of the `Result` to return if this is `Ok`.
+     * @typeParam `U`, the `ok` type from the asynchronous function.
+     * @typeParam `F`, the `err` type from the asynchronous function.
      *
      * @remarks This method can be used for control flow based on `Result` values.
      *
@@ -1080,9 +1081,9 @@ export namespace Result {
      * assertEquals(await (Result.err("error") as Result<number, string>).andThenAsync(sq_to_string), Result.err("error"));
      * ```
      */
-    andThenAsync<R2 extends Result<unknown, unknown>>(
-      then: (ok: T) => Promise<R2>,
-    ): Promise<R2 | Err<E>>;
+    andThenAsync<U, F>(
+      then: (ok: T) => Promise<Result<U, F>>,
+    ): Promise<Result<U, E | F>>;
 
     /**
      * @returns `res` if the result is `Err`, otherwise returns `this`.
@@ -1128,8 +1129,8 @@ export namespace Result {
      * @returns the result of applying the appropriate function to the contained value.
      * @param `_else`, the function to call with the `err` value.
      *
-     * @typeParam `U`, the type of `ok` returned from the function.
-     * @typeParam `F`, the type of `err` returned from the function.
+     * @typeParam `U`, the type of `ok` from the function.
+     * @typeParam `F`, the type of `err` from the function.
      *
      * @remarks This function can be used for control flow based on `Result` values.
      *
@@ -1162,8 +1163,8 @@ export namespace Result {
      * @returns the result of applying the appropriate function to the contained value.
      * @param `_else`, the asynchronous function to call with the `err` value.
      *
-     * @typeParam `U`, the type of `ok` returned from the function.
-     * @typeParam `F`, the type of the `err` value returned from the function.
+     * @typeParam `U`, the `ok` type from the asynchronous function.
+     * @typeParam `F`, the `err` type from the asynchronous function.
      *
      * @remarks This method can be used for control flow based on `Result` values.
      *
