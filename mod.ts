@@ -435,7 +435,7 @@ export namespace Result {
      * import { assertEquals } from "@std/assert";
      *
      * const x = Result.ok(2);
-     * assertEquals(x.isOk(), true);;
+     * assertEquals(x.isOk(), true);
      *
      * const y = Result.err("error");
      * assertEquals(y.isOk(), false);
@@ -527,7 +527,7 @@ export namespace Result {
      * import { assertEquals } from "@std/assert";
      *
      * const x = Result.err("error");
-     * assertEquals(x.isErr(), true);;
+     * assertEquals(x.isErr(), true);
      *
      * const y = Result.ok(1);
      * assertEquals(y.isErr(), false);
@@ -748,7 +748,7 @@ export namespace Result {
     mapErr<F>(fn: (err: E) => F): Result<T, F>;
 
     /**
-     * Mpas a `Result<T, E>` to `Result<T, F>` by applying an asynchronous function to a contained `Err<F>` value, leaving an `Ok<T>` value untouched.
+     * Maps a `Result<T, E>` to `Result<T, F>` by applying an asynchronous function to a contained `Err<F>` value, leaving an `Ok<T>` value untouched.
      *
      * @returns a `Promise` with the new `Result<T, F>` value.
      * @param `fn`, the asynchronous function to apply to the `err` value.
@@ -1015,7 +1015,7 @@ export namespace Result {
      * const b2 = Result.ok("foo");
      * assertEquals(a2.and(b2), Result.err("early error"));
      *
-     * const a3 = Result.err("not a 2") as Result<number, string>;;
+     * const a3 = Result.err("not a 2") as Result<number, string>;
      * const b3 = Result.err("late error");
      * assertEquals(a3.and(b3), Result.err("not a 2"));
      *
@@ -1110,7 +1110,7 @@ export namespace Result {
      * const b2 = Result.ok("foo");
      * assertEquals(a2.or(b2), Result.ok("foo"));
      *
-     * const a3 = Result.err("not a 2") as Result<number, string>;;
+     * const a3 = Result.err("not a 2") as Result<number, string>;
      * const b3 = Result.err("late error");
      * assertEquals(a3.or(b3), Result.err("late error"));
      *
