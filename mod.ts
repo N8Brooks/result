@@ -1,4 +1,9 @@
-/** `Result` is a type that represents either success (`Ok`) or failure (`Err`). */
+/**
+ * `Result` is a type that represents either success (`Ok`) or failure (`Err`).
+ *
+ * @typeParam `T`, the type of the `ok` value.
+ * @typeParam `E`, the type of the `err` value.
+ */
 export type Result<T, E> = Result.Ok<T> | Result.Err<E>;
 
 /** A namespace to simulate `static` methods for the `Result` type. */
@@ -1210,6 +1215,9 @@ export namespace Result {
       return _else(this.err);
     }
 
+    /**
+     * @see {@link Resultable}
+     */
     mapErr<F>(fn: (err: E) => F): Err<F> {
       return new Err(fn(this.err));
     }

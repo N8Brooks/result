@@ -108,7 +108,7 @@ const defaultValue = Result.err("error").unwrapOr(0);
 assertEquals(defaultValue, 0);
 
 const result = Result.ok(10) as Result<number, string>);
-const expectation = result.expect(  "Expected value");
+const expectation = result.expect("Expected value");
 assertEquals(expectation, 10);
 ```
 
@@ -152,7 +152,9 @@ assertEquals(Result.fromIter(mixed), Result.err("error"));
 ## Api reference
 
 For a full list of methods and examples, refer to the documentation in the code
-comments from [mod.ts](./mod.ts).
+comments from the internal
+[Resultable](./mod.ts#:~:text=Resultable%3CT%2C%20E%3E) interface. The `Ok` and
+`Err` classes inheret the doc comments from the `Resultable` interface.
 
 ## License
 
