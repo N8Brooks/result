@@ -1,3 +1,6 @@
+/** `Result` is a type that represents either success (`Ok`) or failure (`Err`). */
+export type Result<T, E> = Result.Ok<T> | Result.Err<E>;
+
 /** A namespace to simulate `static` methods for the `Result` type. */
 // deno-lint-ignore no-namespace
 export namespace Result {
@@ -45,398 +48,6 @@ export namespace Result {
       oks.push(res.ok);
     }
     return new Ok(oks);
-  }
-
-  /**
-   * Creates a new `Ok` value.
-   *
-   * @param ok the value to wrap in an `Ok`.
-   * @returns a new `Ok<T>` value.
-   *
-   * @typeParam `T`, the type of the value.
-   *
-   * @remarks This is a convenience method to avoid the `new` keyword.
-   *
-   * @see {@link err} for the `Err` variant.
-   *
-   * @example
-   * ```ts
-   * import { Result } from "./mod.ts";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const x = Result.ok(2);
-   * assertEquals(x, new Result.Ok(2));
-   * ```
-   */
-  export function ok<T>(ok: T): Ok<T> {
-    return new Ok(ok);
-  }
-
-  /** Contains the success value of a `Result`. */
-  export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
-    readonly err!: never;
-
-    constructor(public readonly ok: T) {}
-
-    [Symbol.iterator](): IterableIterator<T> {
-      let ran = false;
-      return {
-        next: () => {
-          return ran
-            ? { value: undefined, done: true }
-            : (ran = true, { value: this.ok });
-        },
-        [Symbol.iterator]() {
-          return this;
-        },
-      };
-    }
-
-    isOk(): this is Ok<T> {
-      return true;
-    }
-
-    isOkAnd<U extends T>(and: (ok: T) => ok is U): this is Ok<U>;
-    isOkAnd(and: (ok: T) => boolean): this is Ok<T>;
-    isOkAnd(and: (ok: T) => boolean) {
-      return and(this.ok);
-    }
-
-    isOkAndAsync(and: (ok: T) => Promise<boolean>): Promise<boolean> {
-      return and(this.ok);
-    }
-
-    isErr(): this is Err<never> {
-      return false;
-    }
-
-    isErrAnd(): this is Err<never> {
-      return false;
-    }
-
-    isErrAndAsync(): Promise<boolean> {
-      return Promise.resolve(false);
-    }
-
-    map<U>(fn: (ok: T) => U): Ok<U> {
-      return new Ok(fn(this.ok));
-    }
-
-    async mapAsync<U>(fn: (ok: T) => Promise<U>): Promise<Ok<U>> {
-      return new Ok(await fn(this.ok));
-    }
-
-    mapOr<U>(_or: U, fn: (ok: T) => U): U {
-      return fn(this.ok);
-    }
-
-    mapOrElse<U>(_else: (err: never) => U, fn: (ok: T) => U): U {
-      return fn(this.ok);
-    }
-
-    mapErr(): this {
-      return this;
-    }
-
-    mapErrAsync(): Promise<this> {
-      return Promise.resolve(this);
-    }
-
-    inspect(fn: (ok: T) => void): this {
-      fn(this.ok);
-      return this;
-    }
-
-    async inspectAsync(fn: (ok: T) => Promise<void>): Promise<this> {
-      await fn(this.ok);
-      return this;
-    }
-
-    inspectErr(): this {
-      return this;
-    }
-
-    inspectErrAsync(): Promise<this> {
-      return Promise.resolve(this);
-    }
-
-    expect(): T {
-      return this.ok;
-    }
-
-    unwrap(): T {
-      return this.ok;
-    }
-
-    unwrapOr(): T {
-      return this.ok;
-    }
-
-    unwrapOrElse(): T {
-      return this.ok;
-    }
-
-    expectErr(msg: string): never {
-      throw new Error(`${msg}: expectErr called on an Ok value`);
-    }
-
-    unwrapErr(): never {
-      throw new Error("unwrapErr called on an Ok value");
-    }
-
-    and<R2 extends Result<unknown, unknown>>(res: R2): R2 {
-      return res;
-    }
-
-    andThen<R2 extends Result<unknown, unknown>>(then: (ok: T) => R2): R2 {
-      return then(this.ok);
-    }
-
-    andThenAsync<R2 extends Result<unknown, unknown>>(
-      then: (ok: T) => Promise<R2>,
-    ): Promise<R2> {
-      return then(this.ok);
-    }
-
-    or(): this {
-      return this;
-    }
-
-    orElse(): this {
-      return this;
-    }
-
-    orElseAsync(): Promise<this> {
-      return Promise.resolve(this);
-    }
-
-    transpose(): undefined | Ok<NonNullable<T>> {
-      return this.ok === undefined || this.ok === null
-        ? undefined
-        : new Ok(this.ok);
-    }
-
-    flatten<U, F>(this: Result<Result<U, F>, unknown>): Result<U, F> {
-      return this.ok;
-    }
-
-    clone(): Ok<T> {
-      return new Ok(this.ok);
-    }
-  }
-  /**
-   * Implemented by `Ok` values which contains the `ok` value.
-   *
-   * @typeParam `T`, the type of the `ok` value.
-   *
-   * @sealed Not meant to be implemented or extended by users.
-   */
-  interface InnerOk<T> {
-    /**
-     * Access `T | undefined` from `Result<T, E>`.
-     *
-     * @remarks doesn't work well will optional `T` types.
-     */
-    readonly ok: T;
-    /**
-     * Access `E | undefined` from `Result<T, E>`.
-     *
-     * @remarks doesn't work well will optional `E` types.
-     */
-    readonly err?: never;
-  }
-
-  /**
-   * Creates a new `Err` value.
-   *
-   * @param err the value to wrap in an `Err`.
-   * @returns a new `Err<E>` value.
-   *
-   * @typeParam `E`, the type of the value.
-   *
-   * @remarks This is a convenience method to avoid the `new` keyword.
-   *
-   * @see {@link Result.ok} for the `Ok` variant.
-   *
-   * @example
-   * ```ts
-   * import { Result } from "./mod.ts";
-   * import { assertEquals } from "@std/assert";
-   *
-   * const x = Result.err("error");
-   * assertEquals(x, new Result.Err("error"));
-   * ```
-   */
-  export function err<E>(err: E): Err<E> {
-    return new Err(err);
-  }
-
-  /** Contains the error value of a `Result`. */
-  export class Err<E> implements InnerErr<E>, Resultable<never, E> {
-    readonly ok!: never;
-
-    constructor(public readonly err: E) {}
-
-    [Symbol.iterator](): IterableIterator<never> {
-      return {
-        next: () => ({ value: undefined, done: true }),
-        [Symbol.iterator]() {
-          return this;
-        },
-      };
-    }
-
-    isOk(): this is Ok<never> {
-      return false;
-    }
-
-    isOkAnd(): this is Ok<never> {
-      return false;
-    }
-
-    isOkAndAsync(): Promise<boolean> {
-      return Promise.resolve(false);
-    }
-
-    isErr(): this is Err<E> {
-      return true;
-    }
-
-    isErrAnd<F extends E>(and: (err: E) => err is F): this is Err<F>;
-    isErrAnd(and: (err: E) => boolean): this is Err<E>;
-    isErrAnd(and: (err: E) => boolean) {
-      return and(this.err);
-    }
-
-    isErrAndAsync(and: (err: E) => Promise<boolean>): Promise<boolean> {
-      return and(this.err);
-    }
-
-    map(): this {
-      return this;
-    }
-
-    mapAsync(): Promise<this> {
-      return Promise.resolve(this);
-    }
-
-    mapOr<U>(or: U): U {
-      return or;
-    }
-
-    mapOrElse<U>(_else: (err: E) => U): U {
-      return _else(this.err);
-    }
-
-    mapErr<F>(fn: (err: E) => F): Err<F> {
-      return new Err(fn(this.err));
-    }
-
-    async mapErrAsync<F>(fn: (err: E) => Promise<F>): Promise<Err<F>> {
-      return new Err(await fn(this.err));
-    }
-
-    inspect(): this {
-      return this;
-    }
-
-    inspectAsync(): Promise<this> {
-      return Promise.resolve(this);
-    }
-
-    inspectErr(fn: (err: E) => void): this {
-      fn(this.err);
-      return this;
-    }
-
-    async inspectErrAsync(fn: (err: E) => Promise<void>): Promise<this> {
-      await fn(this.err);
-      return this;
-    }
-
-    expect(msg: string): never {
-      throw new Error(`${msg}: expect called on an Err value`);
-    }
-
-    unwrap(): never {
-      throw new Error("unwrap called on an Err value");
-    }
-
-    unwrapOr<T>(or: T): T {
-      return or;
-    }
-
-    unwrapOrElse<T>(_else: (err: E) => T): T {
-      return _else(this.err);
-    }
-
-    expectErr(): E {
-      return this.err;
-    }
-
-    unwrapErr(): E {
-      return this.err;
-    }
-
-    and(): this {
-      return this;
-    }
-
-    andThen(): this {
-      return this;
-    }
-
-    andThenAsync(): Promise<this> {
-      return Promise.resolve(this);
-    }
-
-    or<R2 extends Result<unknown, unknown>>(res: R2): R2 {
-      return res;
-    }
-
-    orElse<R2 extends Result<unknown, unknown>>(_else: (err: E) => R2): R2 {
-      return _else(this.err);
-    }
-
-    orElseAsync<R2 extends Result<unknown, unknown>>(
-      _else: (err: E) => Promise<R2>,
-    ): Promise<R2> {
-      return _else(this.err);
-    }
-
-    transpose(): this {
-      return this;
-    }
-
-    flatten(): this {
-      return this;
-    }
-
-    clone(): Err<E> {
-      return new Err(this.err);
-    }
-  }
-
-  /**
-   * Implemented by `Err` values which contain the `err` value.
-   *
-   * @typeParam `E`, the type of the `err` value.
-   *
-   * @sealed Not meant to be implemented or extended by users.
-   */
-  interface InnerErr<E> {
-    /**
-     * Access `T | undefined` from `Result<T, E>`.
-     *
-     * @remarks doesn't work well will optional `T` types.
-     */
-    readonly ok?: never;
-    /**
-     * Access `E | undefined` from `Result<T, E>`.
-     *
-     * @remarks doesn't work well will optional `E` types.
-     */
-    readonly err: E;
   }
 
   /**
@@ -1294,7 +905,397 @@ export namespace Result {
      */
     clone(): Result<T, E>;
   }
-}
 
-/** `Result` is a type that represents either success (`Ok`) or failure (`Err`). */
-export type Result<T, E> = Result.Ok<T> | Result.Err<E>;
+  /**
+   * Creates a new `Ok` value.
+   *
+   * @param ok the value to wrap in an `Ok`.
+   * @returns a new `Ok<T>` value.
+   *
+   * @typeParam `T`, the type of the value.
+   *
+   * @remarks This is a convenience method to avoid the `new` keyword.
+   *
+   * @see {@link err} for the `Err` variant.
+   *
+   * @example
+   * ```ts
+   * import { Result } from "./mod.ts";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const x = Result.ok(2);
+   * assertEquals(x, new Result.Ok(2));
+   * ```
+   */
+  export function ok<T>(ok: T): Ok<T> {
+    return new Ok(ok);
+  }
+
+  /**
+   * Implemented by `Ok` values which contains the `ok` value.
+   *
+   * @typeParam `T`, the type of the `ok` value.
+   *
+   * @sealed Not meant to be implemented or extended by users.
+   */
+  interface InnerOk<T> {
+    /**
+     * Access `T | undefined` from `Result<T, E>`.
+     *
+     * @remarks doesn't work well will optional `T` types.
+     */
+    readonly ok: T;
+    /**
+     * Access `E | undefined` from `Result<T, E>`.
+     *
+     * @remarks doesn't work well will optional `E` types.
+     */
+    readonly err?: never;
+  }
+
+  /** Contains the success value of a `Result`. */
+  export class Ok<T> implements InnerOk<T>, Resultable<T, never> {
+    readonly err!: never;
+
+    constructor(public readonly ok: T) {}
+
+    [Symbol.iterator](): IterableIterator<T> {
+      let ran = false;
+      return {
+        next: () => {
+          return ran
+            ? { value: undefined, done: true }
+            : (ran = true, { value: this.ok });
+        },
+        [Symbol.iterator]() {
+          return this;
+        },
+      };
+    }
+
+    isOk(): this is Ok<T> {
+      return true;
+    }
+
+    isOkAnd<U extends T>(and: (ok: T) => ok is U): this is Ok<U>;
+    isOkAnd(and: (ok: T) => boolean): this is Ok<T>;
+    isOkAnd(and: (ok: T) => boolean) {
+      return and(this.ok);
+    }
+
+    isOkAndAsync(and: (ok: T) => Promise<boolean>): Promise<boolean> {
+      return and(this.ok);
+    }
+
+    isErr(): this is Err<never> {
+      return false;
+    }
+
+    isErrAnd(): this is Err<never> {
+      return false;
+    }
+
+    isErrAndAsync(): Promise<boolean> {
+      return Promise.resolve(false);
+    }
+
+    map<U>(fn: (ok: T) => U): Ok<U> {
+      return new Ok(fn(this.ok));
+    }
+
+    async mapAsync<U>(fn: (ok: T) => Promise<U>): Promise<Ok<U>> {
+      return new Ok(await fn(this.ok));
+    }
+
+    mapOr<U>(_or: U, fn: (ok: T) => U): U {
+      return fn(this.ok);
+    }
+
+    mapOrElse<U>(_else: (err: never) => U, fn: (ok: T) => U): U {
+      return fn(this.ok);
+    }
+
+    mapErr(): this {
+      return this;
+    }
+
+    mapErrAsync(): Promise<this> {
+      return Promise.resolve(this);
+    }
+
+    inspect(fn: (ok: T) => void): this {
+      fn(this.ok);
+      return this;
+    }
+
+    async inspectAsync(fn: (ok: T) => Promise<void>): Promise<this> {
+      await fn(this.ok);
+      return this;
+    }
+
+    inspectErr(): this {
+      return this;
+    }
+
+    inspectErrAsync(): Promise<this> {
+      return Promise.resolve(this);
+    }
+
+    expect(): T {
+      return this.ok;
+    }
+
+    unwrap(): T {
+      return this.ok;
+    }
+
+    unwrapOr(): T {
+      return this.ok;
+    }
+
+    unwrapOrElse(): T {
+      return this.ok;
+    }
+
+    expectErr(msg: string): never {
+      throw new Error(`${msg}: expectErr called on an Ok value`);
+    }
+
+    unwrapErr(): never {
+      throw new Error("unwrapErr called on an Ok value");
+    }
+
+    and<R2 extends Result<unknown, unknown>>(res: R2): R2 {
+      return res;
+    }
+
+    andThen<R2 extends Result<unknown, unknown>>(then: (ok: T) => R2): R2 {
+      return then(this.ok);
+    }
+
+    andThenAsync<R2 extends Result<unknown, unknown>>(
+      then: (ok: T) => Promise<R2>,
+    ): Promise<R2> {
+      return then(this.ok);
+    }
+
+    or(): this {
+      return this;
+    }
+
+    orElse(): this {
+      return this;
+    }
+
+    orElseAsync(): Promise<this> {
+      return Promise.resolve(this);
+    }
+
+    transpose(): undefined | Ok<NonNullable<T>> {
+      return this.ok === undefined || this.ok === null
+        ? undefined
+        : new Ok(this.ok);
+    }
+
+    flatten<U, F>(this: Result<Result<U, F>, unknown>): Result<U, F> {
+      return this.ok;
+    }
+
+    clone(): Ok<T> {
+      return new Ok(this.ok);
+    }
+  }
+
+  /**
+   * Creates a new `Err` value.
+   *
+   * @param err the value to wrap in an `Err`.
+   * @returns a new `Err<E>` value.
+   *
+   * @typeParam `E`, the type of the value.
+   *
+   * @remarks This is a convenience method to avoid the `new` keyword.
+   *
+   * @see {@link Result.ok} for the `Ok` variant.
+   *
+   * @example
+   * ```ts
+   * import { Result } from "./mod.ts";
+   * import { assertEquals } from "@std/assert";
+   *
+   * const x = Result.err("error");
+   * assertEquals(x, new Result.Err("error"));
+   * ```
+   */
+  export function err<E>(err: E): Err<E> {
+    return new Err(err);
+  }
+
+  /**
+   * Implemented by `Err` values which contain the `err` value.
+   *
+   * @typeParam `E`, the type of the `err` value.
+   *
+   * @sealed Not meant to be implemented or extended by users.
+   */
+  interface InnerErr<E> {
+    /**
+     * Access `T | undefined` from `Result<T, E>`.
+     *
+     * @remarks doesn't work well will optional `T` types.
+     */
+    readonly ok?: never;
+    /**
+     * Access `E | undefined` from `Result<T, E>`.
+     *
+     * @remarks doesn't work well will optional `E` types.
+     */
+    readonly err: E;
+  }
+
+  /** Contains the error value of a `Result`. */
+  export class Err<E> implements InnerErr<E>, Resultable<never, E> {
+    readonly ok!: never;
+
+    constructor(public readonly err: E) {}
+
+    [Symbol.iterator](): IterableIterator<never> {
+      return {
+        next: () => ({ value: undefined, done: true }),
+        [Symbol.iterator]() {
+          return this;
+        },
+      };
+    }
+
+    isOk(): this is Ok<never> {
+      return false;
+    }
+
+    isOkAnd(): this is Ok<never> {
+      return false;
+    }
+
+    isOkAndAsync(): Promise<boolean> {
+      return Promise.resolve(false);
+    }
+
+    isErr(): this is Err<E> {
+      return true;
+    }
+
+    isErrAnd<F extends E>(and: (err: E) => err is F): this is Err<F>;
+    isErrAnd(and: (err: E) => boolean): this is Err<E>;
+    isErrAnd(and: (err: E) => boolean) {
+      return and(this.err);
+    }
+
+    isErrAndAsync(and: (err: E) => Promise<boolean>): Promise<boolean> {
+      return and(this.err);
+    }
+
+    map(): this {
+      return this;
+    }
+
+    mapAsync(): Promise<this> {
+      return Promise.resolve(this);
+    }
+
+    mapOr<U>(or: U): U {
+      return or;
+    }
+
+    mapOrElse<U>(_else: (err: E) => U): U {
+      return _else(this.err);
+    }
+
+    mapErr<F>(fn: (err: E) => F): Err<F> {
+      return new Err(fn(this.err));
+    }
+
+    async mapErrAsync<F>(fn: (err: E) => Promise<F>): Promise<Err<F>> {
+      return new Err(await fn(this.err));
+    }
+
+    inspect(): this {
+      return this;
+    }
+
+    inspectAsync(): Promise<this> {
+      return Promise.resolve(this);
+    }
+
+    inspectErr(fn: (err: E) => void): this {
+      fn(this.err);
+      return this;
+    }
+
+    async inspectErrAsync(fn: (err: E) => Promise<void>): Promise<this> {
+      await fn(this.err);
+      return this;
+    }
+
+    expect(msg: string): never {
+      throw new Error(`${msg}: expect called on an Err value`);
+    }
+
+    unwrap(): never {
+      throw new Error("unwrap called on an Err value");
+    }
+
+    unwrapOr<T>(or: T): T {
+      return or;
+    }
+
+    unwrapOrElse<T>(_else: (err: E) => T): T {
+      return _else(this.err);
+    }
+
+    expectErr(): E {
+      return this.err;
+    }
+
+    unwrapErr(): E {
+      return this.err;
+    }
+
+    and(): this {
+      return this;
+    }
+
+    andThen(): this {
+      return this;
+    }
+
+    andThenAsync(): Promise<this> {
+      return Promise.resolve(this);
+    }
+
+    or<R2 extends Result<unknown, unknown>>(res: R2): R2 {
+      return res;
+    }
+
+    orElse<R2 extends Result<unknown, unknown>>(_else: (err: E) => R2): R2 {
+      return _else(this.err);
+    }
+
+    orElseAsync<R2 extends Result<unknown, unknown>>(
+      _else: (err: E) => Promise<R2>,
+    ): Promise<R2> {
+      return _else(this.err);
+    }
+
+    transpose(): this {
+      return this;
+    }
+
+    flatten(): this {
+      return this;
+    }
+
+    clone(): Err<E> {
+      return new Err(this.err);
+    }
+  }
+}
